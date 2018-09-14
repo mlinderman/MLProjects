@@ -82,15 +82,17 @@ X = [ones(m, 1) X];
 fprintf('Running gradient descent ...\n');
 
 % Choose some alpha value
+alpha_histories = zeros(10,1)
 alpha = .01;
 num_iters = 150;
+theta = zeros(3, 1)
 
-% Init Theta and Run Gradient Descent 
-J_history = zeros(10, 2, length(X))
-for i = length(J_history)
-    theta = zeros(3, 1);
-    J_history(i) = gradientDescentMulti(X, y, theta, alpha, num_iters); % returns [theta, J_history]
-    alpha = alpha*3
+% Init Theta and Run Gradient Descent 10 times with varying alphas, saving results
+J_histories = [10, 2]
+for i = length(J_histories)
+    J_histories(i, 1:2) = gradientDescentMulti(X, y, theta, alpha, num_iters); % returns [theta, J_history]
+    alpha_histories(i) = alpha
+    alpha = alpha * 3
 end
 
 % Plot the convergence graph
@@ -98,11 +100,11 @@ figure;
 xlabel('Number of iterations');
 ylabel('Cost J');
 
-for hist = 1:numel(J_history)
-    plot(1:numel(J_history(hist)), J_history(hist), '-b', 'LineWidth', 2);
-    if hist == 1
-        hold on;
-    end
+for hist = 1:length(J_histories)
+    x = [1:length(J_histories(hist, 2))]
+    y = J_histories(hist, 2)
+    plot(1:numel(J_histories(hist)()), J_history(hist), '-b', 'LineWidth', 2);
+    hold on;
 end
 
 % Display gradient descent's result
