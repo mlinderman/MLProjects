@@ -82,17 +82,20 @@ X = [ones(m, 1) X];
 fprintf('Running gradient descent ...\n');
 
 % Choose some alpha value
-alpha_histories = zeros(10,1)
+alpha_histories = []
 alpha = .01;
-num_iters = 150;
-theta = zeros(3, 1)
+num_iters = 200;
 
 % Init Theta and Run Gradient Descent 10 times with varying alphas, saving results
-J_histories = [10, 2]
-for i = length(J_histories)
-    J_histories(i, 1:2) = gradientDescentMulti(X, y, theta, alpha, num_iters); % returns [theta, J_history]
-    alpha_histories(i) = alpha
-    alpha = alpha * 3
+J_histories = {};
+ans_thetas = {};
+for i = 1:8
+    theta = zeros(3, 1);
+    [t, h] = gradientDescentMultiVectorized(X, y, theta, alpha, num_iters); % returns [theta, J_history]
+    ans_thetas{i} = t;
+    J_histories{i} = h;
+    alpha_histories = [alpha_histories; alpha];
+    alpha = alpha * 2;
 end
 
 % Plot the convergence graph
@@ -100,31 +103,37 @@ figure;
 xlabel('Number of iterations');
 ylabel('Cost J');
 
-for hist = 1:length(J_histories)
-    x = [1:length(J_histories(hist, 2))]
-    y = J_histories(hist, 2)
-    plot(1:numel(J_histories(hist)()), J_history(hist), '-b', 'LineWidth', 2);
+for i = 1:length(J_histories)
+    if sum(isinf(J_histories{i})) > 0
+        break
+    endif
+    x = [1:length(J_histories{i})];
+    y = J_histories{i};
+    plot(x, y, '-'+i, 'LineWidth', 2);
+    xlabel('Number of iterations');
+    ylabel('Cost J');
     hold on;
 end
 
 % Display gradient descent's result
-fprintf('Theta computed from gradient descent: \n');
-fprintf(' %f \n', theta);
-fprintf('\n');
+fprintf('Thetas computed from gradient descent: \n');
+for i = 1:length(ans_thetas)
+    fprintf('run #%i: %.0f, %.0f, %.0f \n', i, ans_thetas{i});
+endfor
 
 % Estimate the price of a 1650 sq-ft, 3 br house
 % ====================== YOUR CODE HERE ======================
 % Recall that the first column of X is all-ones. Thus, it does
 % not need to be normalized.
 
-testX = [1650, 3]
+testX = [1650, 3];
 
 % to normalize a single row of features, you want to use the values you found
 % earlier for all samples for mean and standard deviation
 testX = (testX - mu) ./ sigma
 
-testX = [1, testX]
-theta
+testX = [1, testX];
+theta = ans_thetas{length(ans_thetas)}; % the last thetas calculated in the iteration above with different alphas
 % two equally sized vectors, theta and testX (one column vector, one row vector) 
 % remember that theta1*x1 + theta2*x2 + theta3*x3...  is your hypothesis
 % and now you have thetas calculated using gradient descent
@@ -165,7 +174,7 @@ m = length(y);
 X = [ones(m, 1) X];
 
 % Calculate the parameters from the normal equation
-theta = normalEqn(X, y);
+theta = normalEqn(X, y)
 
 % Display normal equation's result
 fprintf('Theta computed from the normal equations: \n');
@@ -175,7 +184,8 @@ fprintf('\n');
 
 % Estimate the price of a 1650 sq-ft, 3 br house
 % ====================== YOUR CODE HERE ======================
-price = 0; % You should change this
+
+price = sum(theta' .* [1, 1650, 3]);
 
 
 % ============================================================

@@ -19,8 +19,11 @@ for iter = 1:num_iters
 
     newThetas = zeros([size(theta), 1]);
     for idx = 1:size(theta) % size of the largest dimension, the row count, in this instance
+        % using X*theta, not theta'X because X samples are rows, not columns and to do this vector/matrix 
+        % multiplication, we want the features for each row of X to be multiplied to the corresponding thetas.'
         newThetas(idx, 1) = theta(idx) - alpha * 1/m * sum((X * theta - y) .* X(:, idx));
     end
+
     theta = [newThetas];
 
     % ============================================================
@@ -31,3 +34,4 @@ for iter = 1:num_iters
 end
 
 end
+
