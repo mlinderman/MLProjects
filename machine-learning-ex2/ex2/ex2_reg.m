@@ -119,7 +119,7 @@ options = optimset('GradObj', 'on', 'MaxIter', 400);
 % Plot Boundary
 plotDecisionBoundary(theta, X, y);
 hold on;
-title(sprintf('lambda = %g', lambda))
+title(sprintf('lambda = %f', lambda))
 
 % Labels and Legend
 xlabel('Microchip Test 1')
