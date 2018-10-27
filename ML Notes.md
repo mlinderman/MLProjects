@@ -171,7 +171,12 @@ And then for all j > 0:
 
 $$    \theta_j = \theta_j - \alpha[\frac{1}{m}\sum_{i=1}^m(h_\theta(x^{i}) - y^{i})*x_1^{(i)}) + \frac{\lambda}{m}\theta_j]$$ 
 
-for each iteration.
+for each iteration.  My vectorized version looks like this (see homework for costFunctionReg (ex2 or ex2 lrCostFunction)):
+
+           grad = 1/m * (transpose(X) * (h - y)) + lambda/m * [0; theta(2:end)];
+
+(That's not doing gradient descent (it's missing th theta - alpha part in the beginning), but just producing the gradient for each theta).  To walk through this, the result you're seeking is a vector of gradients for each theta (think about the non-vectorized version with a loop that calculates a gradient for each theta, adding sum of lambda * thetas to only the non-zero theta gradients). So just to check, X is matrix of samples, h is column vector of predictions, y is column of answers (1 per sample), m x 1. So h-y is element-by operation and result is a single column vector, m x 1, transpose(X) is an n x m matrix.  That multiplied by h-y is then a n x 1 matrix, 1 row per theta, and that's what you want!!! The result is a vecttor of gradients, 1 per theta (that are subtracted from the corresponding theta during gradient descent - but here we're just producing the gradients). Adding the regularization parameter changes nothing about the dimensions of the vector.
+
 
 
 ## Great cheat sheet for all regression, gradient descent, regularization formulas:
@@ -179,6 +184,19 @@ https://medium.com/ml-ai-study-group/vectorized-implementation-of-cost-functions
 
 
 
+## How to decide on the number and type of features
+
+I include this here not because it's a part of Ng's course but because it keeps coming up as a question in my mind: how to decide on whether to multiply base features together to come up with another.  In the neural networks section of the course, Ng talked about the range of possible features when you have 100 base feature (~5000) when you square each base feature and also multiply each feature against other features.  Something like : $x_1^2, x_1x_2, x_1x_3, x_1x_4.....x_1x_100$  and then again for $x_2$:  $x_2^2, x_2x_3, x_2x_4, x_2x_5......x_2x_100$  and so on.  What I'm getting from that is that you may not know up front which to choose but that as you add more, you can better fit unusual test data shapes (and maybe overfit them - see above). 
+
+## Neural networks
+When you have a lot of base features, you can use up a lot of additional feature space while trying to fit any sort of unusual array of sample data.  Consider the logistic examples that Ng used as demonstrations about regularization/over-fitting.  If the best way to fit these things well is by adding features, you might need to work with lots of features - in the thousands.  Think of the problem of computer vision where you may be comparing features of images that contain thousands of pixel values - even if they're only grayscale images, if you consider each pixel a feature.  Neural networks are useful in cases like these where the feature set (n) is very large.
+
+A single "neuron" can be thought of as a single hypothesis as in logistic regression where inputs are the features and theta values are sometimes called "weights".  The input nodes in a neural network (the leftmost layer) are like the features $x_n$, one input node per feature.  $\Theta^{(j)}$ (uppercase theta), then, is a matrix, of thetas that communicates theta values between layers j and j + 1.  And $a_i^{(j)}$ is the activation node i in layer j.  By the way, the first activation layer is one to the right of the input layer so it's actually the second layer and so called $a_i^{(2)}$ 
+
+
+Neural net activation nodes always use a sigmoid activation function (just like with logistic regression in order to map to 0 or 1)
+
+So each activation layer is "learning" it's own set of features which are, in turn, passed on to the next activation layer.  Input layer (x's) * $\Theta^{(1)}$ gives you inputs to $a^2$ and so on.  The multiplication of the $X\Theta^n$ that occurs in every layer Ng has abbreviated to z.  So, in each layer there's a $z_n^j$ (not sure about the super and subscript letters there but the point is that there's a different set of x's and thetas for each activation node in a neural network).  After the first activation layer, the x's are the a's that result from each activation layer.
 
 
 
