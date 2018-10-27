@@ -30,10 +30,16 @@ X = [ones(m, 1) X];
 %       for each row.
 %       
 
-
-
-
-
+% you want num_labels results for each X, so get the matrices lined up 
+% so that the result is a matrix of n rows x num_labels columns
+% then apply max() to each row (all rows should total 1 because only one classifier
+% should match) and get the returned index from that max operation
+% that index of the max column should be the column corresponding to the classifier, 1-10
+% Geet max to operate along columns, not rows (3rd argument to max())
+% max returns max found along the searched dimension (columns in this case), 
+% and, optionally, the index of the column which should be the only column 
+% for that row containing 1 since it's presumed that only one qualifier matches.
+[max, p] = max(X * transpose(all_theta), [], 2) 
 
 
 % =========================================================================

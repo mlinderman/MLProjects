@@ -21,7 +21,7 @@ grad = zeros(size(theta));
 % Hint: The computation of the cost function and gradients can be
 %       efficiently vectorized. For example, consider the computation
 %
-        h = sigmoid(X * theta)
+        h = sigmoid(X * theta);
         J = 1/m * (-transpose(y) * log(h) - transpose(1 - y) * log(1 - h)) + lambda/(2*m) * sum(theta(2:end).^2);
 
 %       Each row of the resulting matrix will contain the value of the
@@ -47,14 +47,6 @@ grad = zeros(size(theta));
 %           temp = theta; 
 %           temp(1) = 0;   % because we don't add anything for j = 0  
 %           grad = grad + YOUR_CODE_HERE (using the temp variable) lambda/m * theta, I think but is that applied to theta or sum(thetas)?  
-
-
-
-
-
-
-
-
 
 
 
