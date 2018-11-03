@@ -21,8 +21,55 @@ p = zeros(size(X, 1), 1);
 %       can use max(A, [], 2) to obtain the max for each row.
 %
 
+fprintf('\nTheta1: ');
+size(Theta1) % a2 inputs (25 * n+1)   
+
+fprintf('\nTheta2: ');
+size(Theta2) % a3 inputs (10 x n+1)
+
+fprintf('\nX: ');
+size(X) % m x n
+
+X = [ones(m, 1) X];
+fprintf('\nX: ');
+size(X)
+
+% had to ponder this for quite some time and then    I
+% had to write it down to visualize what I wanted:
+% basically, you're creating a new X with 
+% 25 rows and 401 columns (from 5000 rows and 401 columns)
+
+% Theta1:
+% 43, 54, 65, 67, 86 ...........  401
+% 23, 54, 56, 67, 39 ...........  401
+% .
+% .
+% .
+% 25
+
+% X:
+% 1234, 34, 64, 56, 57 .........  401
+% 4332, 12, 54, 22, 33 .........  401
+% .
+% .
+% .
+% 5000
 
 
+% seems the desired result will reduce
+% the inputs from 401 features down to 25 (the number of inputs).
+% So, the number of rows in Theta1 needs to 
+% become the number of Thetas in a2, a column vector
+a2 = sigmoid(Theta1 * transpose(X)); % sum the rows 
+size(a2)
+
+% add 1's 
+a2 = [ones(1, size(a2, 2)); a2];
+size(a2)
+
+% now compute a3
+a3 = sigmoid(Theta2 * a2)
+size(a3)
 
 
 
