@@ -194,13 +194,13 @@ When you have a lot of base features, you can use up a lot of additional feature
 A single "neuron" can be thought of as a single hypothesis as in logistic regression where inputs are the features and theta values are sometimes called "weights".  The input nodes in a neural network (the leftmost layer) are like the features $x_n$, one input node per feature.  $\Theta^{(j)}$ (uppercase theta), then, is a matrix, of thetas that communicates theta values between layers j and j + 1.  And $a_i^{(j)}$ is the activation node i in layer j.  By the way, the first activation layer is one to the right of the input layer so it's actually the second layer and so called $a_i^{(2)}$ 
 
 
-Neural net activation nodes always use a sigmoid activation function (just like with logistic regression in order to map to 0 or 1). Really?  Why couldn't activation functions be anything?   You're just creating features for the next layer.
+Neural net activation nodes always use a sigmoid activation function (just like with logistic regression in order to map to 0 or 1). Really?  Why couldn't activation functions be anything?   You're just creating features for the next layer.  So far you've only seen activation functions using sigmoid functions - is that all that's possible with neural nets?
 
 So each activation layer is "learning" it's own set of features which are, in turn, passed on to the next activation layer.  Input layer (x's) * $\Theta^{(1)}$ gives you inputs to $a^2$ and so on.  The multiplication of the $X\Theta^n$ that occurs in every layer Ng has abbreviated to z.  So, in each layer there's a $z_n^j$ (not sure about the super and subscript letters there but the point is that there's a different set of x's and thetas for each activation node in a neural network).  After the first activation layer, the x's are the a's that result from each activation layer.
 
-Had a tough time with exercise a3 getting my head around how to do the forward propogation math.  In the end, some good insights were that it really isn't too disimilar to a single logistic regression problem (assuming you're always doing logistic regressions - but even if you're not).  The hard part was understanding that the input layer is a vertical vector of X's.  And that all of those X's get sent to *each* activation node in a layer.  Each activation node though has it's own $\theta$ taken from rows of $\Theta$.  So that means $\Theta$ has as many rows as there are activation nodes.  You add a corresponding $x_0 = 1$ to each activation layer's x's.  I imagine that later there will be a single $\Theta$ rather than 2 distinct $\Theta$s like in exercise 3's 3 layer network.  A single $\Theta$ then would have a row dimension for every activation node in a layer, and a matrix of those rows for each activation layer.  So that's 3 dimensions.
+Had a tough time with exercise a3 getting my head around how to do the forward propogation math.  In the end, some good insights were that it really isn't too disimilar to a single logistic regression problem (assuming you're always doing logistic regressions - but even if you're not).  The hard part was understanding that the input layer is a vertical vector of X's.  And that all of those X's get sent to *each* activation node in a layer.  Each activation node though has it's own $\theta$ taken from rows of $\Theta$.  So that means $\Theta$ has as many rows as there are activation nodes in the layer.  You add a corresponding $x_0 = 1$ to each activation layer's x's.  I imagine that later there will be a single $\Theta$ rather than 2 distinct $\Theta$s like in exercise 3's 3 layer network.  A single $\Theta$ then would have a row dimension for every activation node in a layer, and a matrix of those rows for each activation layer.  So that's 3 dimensions.
 
-Another good insight: in the exercise, we started with 400 inputs (x's, 1 per each pixel in a 20x20 gray scale image) and each $\Theta^{(1)}$ row then also had 400 + 1 thetas (weights).  And there were some 5000 rows of training data.  So, a 5000 x 400 matrix.  Because the next layer only had 25 activation nodes, $\Theta^{(1)}$ had only 25 rows.  So that 25 x 400 $\Theta^{(1)}$ matrix has the result of taking your original input layer (5000 x 400) and reducing that down to 5000 x 25 and, in the output layer, by the same process, down to 5000 x 10.  Those are your predictions.  So in the traditional diagram of a neural network, consider the input layer as the X matrix, turned on its side, but still having all its training rows.  I fell into the habit of thinking about that input layer as a single set of 400 values.  But, in terms of matrix math, you need to think about all of the training data so you can align the features up with the thetas.  I had to draw some pictures of the matrices involved in each step.  I don't honestly think it matters how you orient the matrices as long as you're multplying features by thetas.  Transpose is your friend and so it printing out the dimensions of arrays for confirmation.  This got me where I needed to go, ultimately:
+Another good insight: in the exercise, we started with 400 inputs (x's, 1 per each pixel in a 20x20 gray scale image) and each $\Theta^{(1)}$ row then also had 400 + 1 thetas (weights).  And there were some 5000 rows of training data.  So, a 5000 x 400 matrix.  (But be careful considering all sample rows at once before the network is trained.  It worked to do a single pass through the network with trained thetas on all rows to com up with predictions.  But to train the network using back-propogation (learned about later), you take one row of sample data at a time and do forward and then backward propogation, accumulating the deltas as you go.)  Because the next layer only had 25 activation nodes, $\Theta^{(1)}$ had only 25 rows.  So that 25 x 400 $\Theta^{(1)}$ matrix has the result of taking your original input layer (5000 x 400) and reducing that down to 5000 x 25 and, in the output layer, by the same process, down to 5000 x 10.  Those are your predictions (classification into 10 classes).  So in the traditional diagram of a neural network, consider the input layer as the X matrix, turned on its side, but still having all its training rows.  I fell into the habit of thinking about that input layer as a single set of 400 values.  But, in terms of matrix math, I needed to think about all of the training data so you can align the features up with the thetas.  (After the network is trained, that wouldn't be training data.  It would be test or real data).  I had to draw some pictures of the matrices involved in each step.  I don't honestly think it matters how you orient the matrices as long as you're multplying features by thetas.  Transpose is your friend and so is printing out the dimensions of arrays for confirmation.  This got me where I needed to go, ultimately:
 
 $$ a2 = sigmoid(\Theta^{(1)} * transpose(X)) $$
 
@@ -208,20 +208,69 @@ And then the same math to get to a3 though did have to transpose again at some p
 
 ## Cost function for logistic Neural networks
 
-So, this is basically the same cost function we used for logistic regression (utilizing log functions) but it's taken further to abstract it out to apply to all activation nodes in a layer and all layers in a neural network.  So there's some extra summing to be done across nodes and layers. Our original cost function for logistic regression (with regularization) ?
+So, this is basically the same cost function we used for logistic regression (utilizing log functions) but it's taken further to abstract it out to apply to all activation nodes in a layer and all layers in a neural network.  So there's some extra summing to be done across nodes and layers. Our original cost function for logistic regression (with regularization) was:
 
 $$ J(\theta) = -\frac{1}{m} \sum_{i=1}^m [y^{(i)}log(h_\theta(x)) + (1 - y^{(i)})log(1-h_\theta(x^{(i)}))] + \frac{\lambda}{2m}\sum_{j=1}^n\theta_j^2$$
 
 
-Our revised version to accommodate all nodes, layers needs a bit more notation.  Here K and L is the layer, $s_l$ is the number of nodes in layer l.
+Our revised version to accommodate all nodes, layers needs a bit more notation.  Here K is the number of output nodes, L is the layer, $s_l$ is the number of nodes in layer l.
 
 
-Todo: update this copy of above to have the neural network changes (more sums, more super/subscripts for K, l, etc.)
-$$ J(\theta) = -\frac{1}{m} \sum_{i=1}^m [y^{(i)}log(h_\theta(x)) + (1 - y^{(i)})log(1-h_\theta(x^{(i)}))] + \frac{\lambda}{2m}\sum_{j=1}^n\theta_j^2$$
+$$ J(\theta) = -\frac{1}{m} \sum_{i=1}^m \sum_{k=1}^K [y_k^{(i)}log(h_\theta(x)) + (1 - y_k^{(i)})log(1-h_\theta(x^{(i)})_k)] + \frac{\lambda}{2m} \sum_{l=1}^{L-1} \sum_{i=l}^{s_l} \sum_{j=1}^{s_l+1}  (\theta_{j,i}^{(l)})^2 $$
+
+As always, the goal is to minimize the cost by adjusting $\Theta$ values by way of gradient descent or another algorithm.  Gradient descent and those other algorithms require us to be able to find the partial derivates with respect to each theta, and then use simultaneous update to update all at once.  Taken one step at a time we first need to compute the output of the neural net and compare it to y (for each training example).  So, do forward propagation to come up with that by doing:
+
+1. multiply input values x $\Theta$^1 and apply sigmoid function to all values to come up with $a^2$ :  $a^2 = sigmoid(\Theta^1 * X)$, just making sure that the matrices align, as always, features to Thetas.
+2. Add a bias input node (by adding a column to $a^2$), then do the same with $a^2 and  \Theta^2$ to come up with $a^3$, and so one until you arrive at the output layer.
+3.  So now you need to figure out the "error" or delta ($\delta$) for each node (j), in each later(l): $\delta_j^{(l)}$.  The easy one is the last "error" between the output of the neural net (each node, if multiple) and the corresponding y.  So, that's $a_j^{(4)} - y_j$ in a four layer network. Remember, the neural net is classifying into buckets, with hopefully one bucket having a value > .5 and the rest less.  So, to compare that to Y values, you need to change the $y^{(i)}$ values to be represented the same way (as a vector of 1's and 0's. 
+4. Now you continue backing through the NN (back propogation) between layer L-1 and L-2 finding deltas successively using:
+
+$$ \delta^{(l)} = (\Theta^{(l)})^T\delta^{(l+1)} .* (a^{(l)}) .* (1 - a^{(l)}) $$
+
+Or, according to Ng, you can calculate all the deltas for a layer like this:
+
+$$ \Delta^{(l)} = \Delta^{(l)} + \delta^{(l+1)}(a^{(l)})^T  $$
+
+That last term is actually the derivative of $g(z^{(l)})$ where that's the activation function for the layer (but it's not that important since Ng gives you the above formula). 
+
+You *don't* calculate a delta for L1 since those are the input.
+
+5. Use those deltas to compute the partial derivates fore each layer using:
+
+$$ \frac{\delta}{\delta\Theta_{ij}^{(l)}}J(\Theta) = a_j^{(l)}\delta_i^{(l+1)} $$
+
+and that's your gradient, one per theta, all the way through the network.  Missing though is the regularization.  (And I think this is what you do gradient checking against.  So that becomes:
+
+For j > 0 (because we don't regularize the bias unit)
+
+$$ D_{ij}^{(l)} = \frac{1}{m}\Delta_{ij}^{(l)} + \lambda\Theta_{ij}^{(l)} $$
+
+For j = 0, just don't add the lamba term
 
 
+## Unrolling Theta vectors for use in advanced functions
+
+When using fminunc or other octave (or Python) functions to calculate the optimal values for Theta for neural networks when you have multiple theta matrices, you'll need to "unroll" the vectors and pass them as one long vector to those functions.  To do that, in Octave, you can do this:  
+
+    thetaVector = [ Theta1(:); Theta2(:); Theta3(:); ]
+    or
+    deltaVector = [ D1(:); D2(:); D3(:) ]
+
+basically, that says to string all rows, all columns out in succession.  (Though I'm confused by the semicolon as I'd think that would create a new row for each but what actually happens is that this creates a column vector so the semicolons make sense.)  Just note that this unrolls by columns so all the elements in column 1, then in column 2, etc.
 
 
+## Gradient checking
+
+Because neural networks are hard and you can easily create a buggy network that looks like it's working, there's a way to estimate the derivatives of the thetas and compare those to what your backprop calculations come up with.  Ng says this is a way to eliminate all problems and that he uses it every time.  If you imagine a single theta and a graph of the function J($\Theta$)...  If you considered a point on either side of that theta value, say theta + episilon and theta - episilon.  If you figure out the slope of the line between those two points (rise over run between the two points: y over x), you can compare that to the derivative.  To abstract that out to a bunch of thetas, you can approximate the partial derivatives with respect to a single theta like this:
+
+$$ J(\Theta) = \frac{J(\theta_1 + \epsilon, \theta_2, \theta_3....\theta_n)}{2\epsilon} $$
+$$ J(\Theta) = \frac{J(\theta_1, \theta_2 + \epsilon , \theta_3....\theta_n)}{2\epsilon} $$
+
+etc, up to:
+
+$$ J(\Theta) = \frac{J(\theta_1, \theta_2, \theta_3....\theta_n + \epsilon)}{2\epsilon} $$
+
+I think that means that you're calculating the gradients for each partial derivative through back propogation and then again via this formula, as many times as you have thetas in an given activation node, in any layer.  But how did this go with regular regression and simultaneous update?  You calculated the partial derivates with respect to each theta, one at a time and then updated all thetas at once (simultaneous updates). And the result was a new set of thetas.  But the derivates you calculated were partial - one for each theta in the hypothesis while the rest remained unchanged. So, what we're doing here is the same, and that gradient checking is once for each theta value for each activation node in each layer (except the last (predictions) and the first (x's)).
 
 
 
