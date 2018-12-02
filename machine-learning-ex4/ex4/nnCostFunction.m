@@ -23,6 +23,7 @@ Theta2 = reshape(nn_params((1 + (hidden_layer_size * (input_layer_size + 1))):en
                  num_labels, (hidden_layer_size + 1));
 size(Theta1)
 size(Theta2)
+size(X)
 
 % Setup some useful variables
 m = size(X, 1);
@@ -64,25 +65,39 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
-% add bias column of 1's to Theta1 and Theta2
-a1 = [ones(m,1), X];
-a2 = [ones(m,1), sigmoid(a1*transpose(Theta1))];
-a3 = sigmoid(a2*transpose(Theta2));
+% add bias column of 1's to X and call it a1
+% a1 = 5000 x 401
+% Theta1 = 25 x 401
+% Theta2 = 10 x 26
 
-% compute the cost by looping over a3 values and accumulating the costs for each output node (10 in this case), for each y 
+% Note: multiplication of the Theta matrices with a(n) matrices
+% can be done two ways, the one implemented below requiring
+% fewer transformation
+
+%a1 = [ones(m,1), X];
+%a2 = [ones(m,1), transpose(sigmoid(Theta1*transpose(a1)))];
+%a3 = transpose(sigmoid(Theta2*transpose(a2)));
+
+a1 = [ones(m,1), X];
+a2 = [ones(m,1), sigmoid(a1 * transpose(Theta1))];
+a3 = sigmoid(a2 * transpose(Theta2));
+size(a2)
+size(a3)
+size(y)
+
+% compute the cost by looping over a3 values and accumulating the 
+% costs for each output node (10 in this case), for each y 
 for i = 1:m 
     % map y values to a row vector of num_labels length so that you can compare to output nodes while computing cost
     yvector = zeros(1,num_labels);
     yvector(1, y(i)) = 1;
     for j = 1:num_labels
-        % log(a3(j))
         % yvector and a3 should both be a row vector of size num_labels
-        J += -yvector(j)*log(a3(j)) - (1 - yvector(j))*log(1 - a3(j));
+        J += -yvector(j)*log(a3(i,j)) - (1 - yvector(j))*log(1 - a3(i,j));
     end
 end
 
 J = (1/m) * J;
-    
 
 
 

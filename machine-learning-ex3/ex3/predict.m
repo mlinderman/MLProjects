@@ -36,8 +36,9 @@ size(X);
 
 % had to ponder this for quite some time and then    I
 % had to write it down to visualize what I wanted:
-% basically, you're creating a new X with 
-% 25 rows and 401 columns (from 5000 rows and 401 columns)
+% basically, you're creating a new X (a2) with 
+% 5000 rows and 25 columns (from 5000 rows and 401 columns)
+% and then a new X (a3) with 5000 rows and 10 cols (the outputs)
 
 % Theta1:
 % 43, 54, 65, 67, 86 ...........  401
@@ -54,6 +55,10 @@ size(X);
 % .
 % .
 % 5000
+
+% so, to line up theta1 and X up for multiplication,
+% transpose X so that the 1st Theta row will match up with 
+% the X columns
 
 
 % seems the desired result will reduce
