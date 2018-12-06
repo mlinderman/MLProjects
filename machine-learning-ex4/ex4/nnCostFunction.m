@@ -99,15 +99,8 @@ end
 
 J = (1/m) * J;
 
-
-
-
-
-
-
-
-
-
+% now add regularization (for all but the bias Thetas in the first columns
+J += (lambda/(2*m)) * (sum(sum(Theta1(:,2:end).^2)) + sum(sum(Theta2(:,2:end).^2)));
 
 
 
