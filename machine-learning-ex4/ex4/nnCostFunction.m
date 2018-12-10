@@ -94,7 +94,6 @@ for i = 1:m
         % a3 is 2 dimensional but we're selecting the corresponding
         % sample row (i) and theta(j) one at a time.
         J += -yvector(j)*log(a3(i,j)) - (1 - yvector(j))*log(1 - a3(i,j));
-
     end
 
     % vectorized computation of delta3 (the easiest delta to compute)
@@ -137,10 +136,9 @@ J = (1/m) * J;
 J += (lambda/(2*m)) * (sum(sum(Theta1(:,2:end).^2)) + sum(sum(Theta2(:,2:end).^2)));
 
 
-% so now we have the  cost of the entire network; it's a single value
-% how does that help?  We want to minimize it.
-
-
+% so now we have the cost of the entire network; it's a single value
+% how does that help?  It helps because gradient descent
+% and other optimized functions measure cost on each pass.
 
 
 % -------------------------------------------------------------
