@@ -259,6 +259,10 @@ $$ \Delta^{(l)} = \frac{1}{m} * \Delta^{(l)} + \lambda\Theta^{(l)} $$
 
 Excluding $\Theta_0^{(l)}$ which is the bias unit for each layer.
 
+Intuition: back propogation is sort of the same thing as forward propogation but we're replacing the inputs (X's in the input layer and a's thereafter) with deltas.  On the forward pass, thetas get multiplied by inputs.  In the backwards direction, they're multiplied by the deltas and we're assigning relative "blame" for the error by way of the derivatives. Those relative blames are the gradients, I think.
+
+When I did the back propogation exercise in Ng's course, I had to transpose some things that he didn't transpose but, again, as long as you're aligning matrices by the right dimensions, it still works.  That may have been because he assumes some orientation to a matrix that's different from what I assumed.  The key is to try to visualize what you're doing.  I commented extensively in nnCostFunction (where backprop is performed) with other insights.
+
 
 ## Unrolling Theta vectors for use in advanced functions
 
@@ -283,6 +287,15 @@ etc, up to:
 $$ J(\Theta) = \frac{J(\theta_1, \theta_2, \theta_3....\theta_n + \epsilon)}{2\epsilon} $$
 
 I think that means that you're calculating the gradients for each partial derivative through back propogation and then again via this formula, as many times as you have thetas in an given activation node, in any layer.  But how did this go with regular regression and simultaneous update?  You calculated the partial derivates with respect to each theta, one at a time and then updated all thetas at once (simultaneous updates). And the result was a new set of thetas.  But the derivates you calculated were partial - one for each theta in the hypothesis while the rest remained unchanged. So, what we're doing here is the same, and that gradient checking is once for each theta value for each activation node in each layer (except the last (predictions) and the first (x's)).
+
+
+## Regularization of gradients in neural networks
+
+You can add regularization after the gradients are calculated via back propogation in a neural network.  Just multiply each theta (except for the 1st (bias) column of thetas) to the corresponding gradient found through back prop.  This should be done for each layer's Thetas.
+
+$$ \Delta^{(l)} = \Delta^{(l)} + \frac{\lambda}{m} * \Theta^{(l)} $$
+
+for all non-bias $\theta$'s. So, you add zero to the bias gradients.
 
 
 

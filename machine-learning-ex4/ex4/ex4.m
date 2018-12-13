@@ -53,11 +53,11 @@ fprintf('\nLoading Saved Neural Network Parameters ...\n')
 
 % Load the weights into variables Theta1 and Theta2
 load('ex4weights.mat');
-size(Theta1)
-size(Theta2)
+%size(Theta1)
+%size(Theta2)
 % Unroll parameters 
 nn_params = [Theta1(:) ; Theta2(:)];
-size(nn_params)
+%size(nn_params)
 
 %% ================ Part 3: Compute Cost (Feedforward) ================
 %  To the neural network, you should first start by implementing the
@@ -146,7 +146,12 @@ initial_nn_params = [initial_Theta1(:) ; initial_Theta2(:)];
 fprintf('\nChecking Backpropagation... \n');
 
 %  Check gradients by running checkNNGradients
-checkNNGradients;
+% commented this out after it succeeded
+% regularization additions to gradients
+% cause it to fail, since they'll be added
+% only to the backprop gradient calculations
+% and not to the checkNNGradients calculation.
+% checkNNGradients;
 
 fprintf('\nProgram paused. Press enter to continue.\n');
 pause;

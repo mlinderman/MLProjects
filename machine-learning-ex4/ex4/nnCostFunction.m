@@ -129,6 +129,11 @@ end
 Theta2_grad = (1/m) .* Theta2_grad;
 Theta1_grad = (1/m) .* Theta1_grad;
 
+%fprintf('\ntheta1_grad, theta2_grad sizes, lambda before reg = %d, %d, %d, %d, %f\n', size(Theta1_grad), size(Theta2_grad),lambda);
+% add regularization to the gradients
+Theta2_grad = Theta2_grad + [zeros(size(Theta2,1), 1), (lambda/m) * Theta2(:,2:end)];
+Theta1_grad = Theta1_grad + [zeros(size(Theta1,1), 1), (lambda/m) * Theta1(:,2:end)];
+
 
 J = (1/m) * J;
 
