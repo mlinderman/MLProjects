@@ -298,5 +298,19 @@ $$ \Delta^{(l)} = \Delta^{(l)} + \frac{\lambda}{m} * \Theta^{(l)} $$
 for all non-bias $\theta$'s. So, you add zero to the bias gradients.
 
 
+## Validating your model
 
+So, you've trained your model.  And you can't get it to perform very well on the test set.  Some things you could do:
+    1. get more training data
+    2. add features (either more columns from real data elements OR exponential elements from basic data values: $x_1^2, x_1^3, x_2^2, x_2^3$ 
+        ....etc.)
+    3, remove features
+    4. adjust lambda (the regularization parameter)
 
+And now it's a bit better!  But maybe it's now overfitting to get that better performance.  How do you know?  Split the training data into a training, validation and test set.  Without a validation set, a good split is generally 70/30 (training/test).  With a validation set, the general practice is to split 60/20/20 (train, validation, test).  
+
+Then train using different versions of the model against the training set and compare the performance of the models by running them with the learned parameters against the *validation* set.  You can compare the performance by looking at the cost arrived at by each AND getting an error ratio - the number of incorrect predictions divided by the overall number of samples in the validation set.
+
+Sometimes models can have high bias or high variance or both.  Bias is underfitting, variance is overfitting.
+
+In order to tell what's happening and how you might want to adjust your model, look at the differences between costs for the training set run and the validation set run.  If the cost is high for both runs and about the same, it's most likely you have a case of high bias.  If the cost is considerably lower for the training set than for the validation set, it's likely that you have a case of high variance (matched the training set too closely and did not generalize well to the validation set).
