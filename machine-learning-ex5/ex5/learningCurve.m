@@ -54,10 +54,17 @@ error_val   = zeros(m, 1);
 % ---------------------- Sample Solution ----------------------
 
 
+% so, for increasing training set sizes, we'll compute the thetas for
+% each set and then use the thetas to calculate the error against the 
+% training and entire validation set
 
-
-
-
+    for i = 1:m
+        train_X = X(1:i, :);
+        train_y = y(1:i);
+        theta = trainLinearReg(train_X, train_y(1:i), 0);
+        error_train(i) = 1/(2*m) * sum((train_X * theta - train_y).^2)
+        error_val(i) = 1/(2*m) * sum((Xval * theta - yval).^2)
+    end
 
 % -------------------------------------------------------------
 

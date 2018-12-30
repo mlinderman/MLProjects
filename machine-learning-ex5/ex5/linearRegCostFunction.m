@@ -21,13 +21,20 @@ grad = zeros(size(theta));
 
 J = 1/(2*m) * sum((X * theta - y).^2) + lambda/(2*m) * sum(theta(2:end,:).^2);
 
-grad = 1/m * sum((X * theta - y) .* X(:,2:end)) .+ ((lambda/m) * [0; theta(2:end,:)])
-
-              sum(  12 x 1       .*       12 x 1) = 12 x 1    .+   2 x 1
 
 
-
-
+% had a very difficult time trying to vectorize this so I wouldn't have to 
+% write two statements and make this only work for n = 2.  But the
+% problem is not making the regularization params work in a single
+% vectorized statement but instead the X(:,1) or X(:,2) term work
+% in one statement. That's because you need to multiply the single
+% value returned by X * theta - y by just one of the X columns, not both.
+% So, finally bailed and did it with two lines
+grad(1,1) = 1/m * sum((X * theta - y) .* X(:,1));
+grad(2,1) = 1/m * sum((X * theta - y) .* X(:,2)) .+ ((lambda/m) * theta(2,1));
+% here's the attempt at a single line, completely vectorized solution
+% as is, the .* X won't work because X is 12 x 2, not 12 x 1
+% grad = 1/m * sum((X * theta - y) .* X) .+ ((lambda/m) * [0; theta(2:end,:)]);
 
 
 % =========================================================================
