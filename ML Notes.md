@@ -323,3 +323,5 @@ If, on the other hand, as the number of samples increases, the training data err
 
 Just keep in mind that you train with the training set and then use those $\Theta$'s to measure the error across all validation set examples, totaled and divided by the total number of validation set examples to arrive at an error rate.  You don't train against the validation set.
 
+Also very important: the cost function to do iterative minimization has a regularization component (for n > 1).  But if you use the same cost function to measure cost of the learned thetas against another data set (validation or test), you should set lambda to zero. Remember, regularization artificially inflates the value of thetas to prevent overfitting.  That lambda has no use, therefore, when you're just measuring how well the calculated thetas work against validation or test data.  So set the lambda to zero when calculating the error (cost) of thetas against test or validation sets.
+

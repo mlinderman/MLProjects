@@ -10,7 +10,7 @@ function [lambda_vec, error_train, error_val] = ...
 %
 
 % Selected values of lambda (you should not change this)
-lambda_vec = [0 0.001 0.003 0.01 0.03 0.1 0.3 1 3 10]';
+lambda_vec = [0 0.001 0.003 0.01 0.03 0.1 0.3 1 3 10];
 
 % You need to return these variables correctly.
 error_train = zeros(length(lambda_vec), 1);
@@ -38,8 +38,19 @@ error_val = zeros(length(lambda_vec), 1);
 %       end
 %
 %
-
-
+    for i = 1:length(lambda_vec)
+        lambda = lambda_vec(i);
+        % using training data and current lambda, calculate thetas
+        theta = trainLinearReg(X, y, lambda);
+        % with learned thetas, get final cost for training data
+        % BUT don't use lambda here!! because you want
+        % the plain cost of the lambda used against the training
+        % data
+        error_train(i) = linearRegCostFunction(X, y, theta, 0)
+        % with learned thetas, get final cost for validation data
+        % BUT don't use lambda here either!!
+        error_val(i) = linearRegCostFunction(Xval, yval, theta, 0);
+    end
 
 
 

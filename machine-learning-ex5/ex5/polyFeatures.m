@@ -15,10 +15,11 @@ X_poly = zeros(numel(X), p);
 %
 % 
 
-
-
-
-
+for m = 1:rows(X_poly)
+    for pow = 1:p
+        X_poly(m, pow) = X(m,1)^pow;
+    end
+end
 
 % =========================================================================
 

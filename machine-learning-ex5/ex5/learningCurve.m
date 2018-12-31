@@ -20,6 +20,7 @@ m = size(X, 1);
 % You need to return these values correctly
 error_train = zeros(m, 1);
 error_val   = zeros(m, 1);
+%error_val_redone = zeros(m, 1);
 
 % ====================== YOUR CODE HERE ======================
 % Instructions: Fill in this function to return training errors in 
@@ -54,18 +55,25 @@ error_val   = zeros(m, 1);
 % ---------------------- Sample Solution ----------------------
 
 
-% so, for increasing training set sizes, we'll compute the thetas for
+% ML: for increasing training set sizes, we'll compute the thetas for
 % each set and then use the thetas to calculate the error against the 
-% training and entire validation set
-
+% training and entire validation set. Tried to do this by re-writing 
+% the cost function here and, despite that it looked exactly the same
+% as the one in linearRegCostFunction, I got different values for 
+% the validation set than what I got using linearRegCostFunction.  Using 
+% either re-written or linearRegCostFunction gave the same values
+% for the training set, however.  So, must be something about the 
+% validation set data?  Never did figure that out.
     for i = 1:m
         train_X = X(1:i, :);
         train_y = y(1:i);
-        theta = trainLinearReg(train_X, train_y(1:i), 0);
-        error_train(i) = 1/(2*m) * sum((train_X * theta - train_y).^2)
-        error_val(i) = 1/(2*m) * sum((Xval * theta - yval).^2)
+        theta = trainLinearReg(train_X, train_y, lambda);
+        error_train(i) = linearRegCostFunction(train_X, train_y, theta, 0);
+        error_val(i) = linearRegCostFunction(Xval, yval, theta, 0);
     end
 
+error_train
+error_val
 % -------------------------------------------------------------
 
 % =========================================================================
