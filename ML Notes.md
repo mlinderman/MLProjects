@@ -325,3 +325,41 @@ Just keep in mind that you train with the training set and then use those $\Thet
 
 Also very important: the cost function to do iterative minimization has a regularization component (for n > 1).  But if you use the same cost function to measure cost of the learned thetas against another data set (validation or test), you should set lambda to zero. Remember, regularization artificially inflates the value of thetas to prevent overfitting.  That lambda has no use, therefore, when you're just measuring how well the calculated thetas work against validation or test data.  So set the lambda to zero when calculating the error (cost) of thetas against test or validation sets.
 
+## ML Systems design
+
+Consider Ng's example of a spam classifier.  A pointer about that:
+1. The most common words from the data set, maybe 1000 or 10000 of them, represent features.  (I'd assume you'd exclude articles and conjunctions, etc. from that list.)  And each email (a sample), would have 1s or 0s for those feature values.
+
+- How to spend your time?
+    - collect lots of data. (doesn't always help, as we've seen)
+    - develop sophisticated features (email routing from the header, for example) by understanding how spammers route emails.
+    - email message body examination via algorithms - refine the features or create new ones - like concerning the use of exclamation points or deliberate mispellings
+
+bottom line, it's hard to tell which might help.  But you shouldn't just spend time on something you have a gut intuition about
+
+Instead, use error analysis by building a simple model first - quick and dirty.  With that, you can plot learning curves to detect high bias or high variance to help decide how to proceed.  This avoids premature optimization.  Also, you can get a single metric to test things against - say it's the error rate.  Then you can tweak to see what might affect that error rate.
+
+Error analysis: look specifically on what the basic algorithm is misclassifying.  That can guide you.  Given the errors made (using the spam filter example), try to categorize these (pharma, fake watches, phishing emails) then you can build new features to help categorize the largest error sets.
+It's important to have a numerical way to measure performance and use it for each test, rather than eyeballing the errors.  Do error analysis on validation set rather than test set.
+
+### Handling skewed data
+
+Skewed classes are when a classifier is trying to detect a very small occurrence.  Say, for example, that only .5% of examples are positive. You could write what appears to be a great algorithm that gets 99% of the correct predictions but that still misses half of the positives.  So it's not as good as it seems.  A non-learning algorithm that just predicts every sample is negative would do better since that would have a .5% error.
+
+This is the problem with using accuracy as a measure. And also a problem with using a single measure to gauge algorithm performance.
+Enter precision vs. recall
+
+Precision:  true positives / predicted positives
+
+OR:         true positives / true positives + false positives
+
+Recall:    true positives / true positives + false negatives
+
+high precision and high recall are good.  But they move in opposite directions.  So, you want to measure both.  (y = 1 should be the rarer class).  Use both precision and recall, especially when classes are very skewed.
+Depending on what sort of behavior you want - whether you want to get as many cases correct or not miss any - may mean that you want to change the logistic regression threshold from 0.5 to a higher or lower number.  Making it higher, say .9 for positives means you'd make fewer false positive guesses but possibly miss some cases (higher precision.  Making the threshold lower would mean you would miss fewer cases but also that you'd falsely categorize some as positive (higher recall).  Graphing precision vs recall can result in different looking graphs but they do have an inverse-ish relationship.
+
+So, how to use these to find the best algorithm.  We now have 2 real measures of the algorithm's performance.  If you have to wonder about which is better, it can be difficult.  So, to get to a single metric again from these values, you could take the average but that can give you a higher average even if precision and recall are very different.  Instead, use the F or F1 score:
+
+$$ 2\frac{PR}{P+R} $$
+
+There are other measures but this is the standard in ML circles. F scores are between 0 and 1.  So, manipulating the threshold for logistic regression and seeing which has the highest F score against the validation set would be a pretty good way to pick the best threshold.

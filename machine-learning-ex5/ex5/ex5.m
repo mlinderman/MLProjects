@@ -218,3 +218,11 @@ end
 
 fprintf('Program paused. Press enter to continue.\n');
 pause;
+
+
+% extra optional exercises
+% compute error against unseen data using our best fit
+% thetas and lambda value found above
+lambda = 3;
+theta = trainLinearReg(X_poly, y, lambda);
+testError = linearRegCostFunction(X_poly_test, ytest, theta, lambda)
