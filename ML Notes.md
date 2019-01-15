@@ -356,10 +356,86 @@ OR:         true positives / true positives + false positives
 Recall:    true positives / true positives + false negatives
 
 high precision and high recall are good.  But they move in opposite directions.  So, you want to measure both.  (y = 1 should be the rarer class).  Use both precision and recall, especially when classes are very skewed.
-Depending on what sort of behavior you want - whether you want to get as many cases correct or not miss any - may mean that you want to change the logistic regression threshold from 0.5 to a higher or lower number.  Making it higher, say .9 for positives means you'd make fewer false positive guesses but possibly miss some cases (higher precision.  Making the threshold lower would mean you would miss fewer cases but also that you'd falsely categorize some as positive (higher recall).  Graphing precision vs recall can result in different looking graphs but they do have an inverse-ish relationship.
+Depending on what sort of behavior you want - whether you want to get as many cases correct or not miss any - may mean that you want to change the logistic regression threshold from 0.5 to a higher or lower number.  Making it higher, say .9 for positives means you'd make fewer false positive guesses but possibly miss some cases (higher precision).  Making the threshold lower would mean you would miss fewer cases but also that you'd falsely categorize some as positive (higher recall).  Graphing precision vs recall can result in different looking graphs but they do have an inverse-ish relationship.
 
 So, how to use these to find the best algorithm.  We now have 2 real measures of the algorithm's performance.  If you have to wonder about which is better, it can be difficult.  So, to get to a single metric again from these values, you could take the average but that can give you a higher average even if precision and recall are very different.  Instead, use the F or F1 score:
 
 $$ 2\frac{PR}{P+R} $$
 
-There are other measures but this is the standard in ML circles. F scores are between 0 and 1.  So, manipulating the threshold for logistic regression and seeing which has the highest F score against the validation set would be a pretty good way to pick the best threshold.
+There are other measures but this is the standard in ML circles. F scores are between 0 and 1.  So, manipulating the threshold for logistic regression and seeing which has the highest F score against the validation set would be a pretty good way to pick the best threshold.  Ng didn't mention just using the f-score when you're not manipulating the logistic threshold but I've read about f-scores before in articles that don't mention the logistic threshold.  Bottom line, it's just a way to make sure your awesome ML model isn't actually just predicting the same thing against a data set with skewed classes.
+
+### Handling Large Data Sets
+
+Under certain conditions, training against a lot of data is helpful (not always, like when your algorithm has high bias - underfitting) when:
+    a) your y's can be predicted pretty accurately by a human expert given the features (like the correct form of a word (y) to use between two halves of a sentence (x's) (too, two to)).  
+    b) you have a lot of features (suggesting you'll be able to achieve low bias - since more features tend to overfit, not underfit).  In this situation, a large training set is likely to get you low variance.
+These are actually similar since more features provides more information to an expert human.
+
+Precision = true positives / (true positives + false positives)
+Recall = true positives / (true positives + false negatives)
+
+P = 85 / (85 + 890) = .08717949
+R = 85 / (85 + 15) = .85
+F = 2 * (P*R)/(P+R)
+  = 2 * .14820513 / .9371949
+
+
+## Support Vector Machine (SVM)
+
+This is a powerful supervised learning algorithm that's powerful and popular.  Looks like logistic regression with some small changes to the cost function:
+
+$$ -(ylog \frac{1}{1 + e^{-\Theta^Tx}}) - (1 - y)log(1 - \frac{1}{1 + e^{-\Theta^Tx}}) $$
+
+
+If you remember what this is doing, it's basically two different functions, 1 for when y = 1 and another for y = 0.  The result is two different cost functions, one which nears a limit of 0 as $\Theta^Tx$ gets larger than 0 and another that approaches a limit of 0 as $\Theta^Tx$ gets smaller.  Those functions are curved.  Support vector machines use a slightly different set of cost functions that are a combination of straight line segments that roughly follow the same contours as the logistic cost functions.  That's computationally cheaper, apparently.
+
+Support vector machines are also known as "large margin classifiers."  That's because SVMs maximize the distance between positive and negative training examples and the decision boundary.  There's a long explanation about that on an "optional" lecture by Ng.  It involves vector math and "norms" (euclidian lengths of vectors).  It's interesting but don't think it's something you're going to be building.  For that matter, it sounds like Ng recommends just using built-in SVMs.  
+
+Conventions for expressing the cost function for SVMs are a little bit different in addition to the elimination of the log functions above.  The $\frac{1}{m}$ is removed from both the first and 2nd (regularization) terms since it's considered a constant.  
+
+Also, lambda $\lambda$, is moved from the regularization part of the equation to the cost part.  And it's called C.  And because it is moved, it behaves in an opposite manner than $\lambda$.  That is, a large value for C would equate with a tendency to underfit, rather than overfit.  And a small value would tend to make the hypothesis overfit.  So C is like $\frac{1}{\lambda}$.  And as long as C isn't too large, SVMs do the right thing when there are a few outliers in the sample set where positives or negatives are mixed in with the others.
+
+Here's what all those changes look like together:
+
+$$ min_\Theta\;\;  C\sum_{i=1}^m[y^{(i)} cost_1(\Theta^Tx^{(i)}) + (1 - y^{(i)}) cost_0(\Theta^Tx^{(i)})] + \frac{1}{2} \sum_{j=1}^n \Theta_j^2 $$
+
+
+Those $cost_0$ and $cost_1$ functions are representations of the function that's made of 2 line segments as mentioned above.  Not sure why Ng just doesn't write them (can they be that hard?) unless again, it's because he doesn't want to get into it because he's going to recommend pre-packaged SVMs.  
+
+Also in the equation above, notice the removal of the $\frac{1}{m}$'s and the C variable.  My guess is that we'll need to supply the value of C to pre-packaged SVMs.
+
+By the way, due to the replaced cost functions (I think) and SVM just predicts 0 or 1 depending on the value of $\Theta^TX$.  Due to the SVM function, $\Theta^TX$ has to be > 1 or less than -1 for it to predict 1 or 0.
+
+### Kernels
+This topic was introduced as part of the SVM lectures so it must be that SVMs use kernels?  In any case, Ng introduced the idea of a Gaussian kernel (one example of a kernel) that he used to create new features.  Think of a 3D Gaussian curve where the highest point of the curve represents proximity to something else.  And the values you're measuring nearness to are the other samples.  In order to avoid creating a bunch of polynomial features to fit a model, you could use kernels instead.  Ng recommends creating new features for each sample that are Gaussian kernels representing similarity to other samples.  And then you replace the original features with the new kernal features, 1 per sample.
+
+The Gaussian kernel looks like this:
+
+$$ exp(-\frac{||x - l^{(i)}||^2}{2\sigma^2}) $$
+
+where $\sigma$ is a variable.  That numerator is the Euclidian distance between x and the "landmark" chosen at random (another sample, in this case). The numerator can also be written as a $ \sum $
+
+The closer the landmark is to x, the closer the feature is to 1.  The further it is, closer to 0.  The $\sigma$ changes the rate at which the Gaussian function goes to zero as you move away from the landmark.  
+
+So, Ng says for landmarks you use all the samples, 1 landmark per training example.  Oh, so you're really measuring how close a *new* example (unseen data), is to training examples that you know the y's for.  So, you make a vector f of new features and treat it exactly like an X, including adding a $ f_0 = 1 $. And then you use $\Theta^Tf$.  Finding parameters is just like before but with $\Theta^Tf$:
+
+
+
+$$ min_\Theta\;\;  C\sum_{i=1}^m[y^{(i)} cost_1(\Theta^Tf^{(i)}) + (1 - y^{(i)}) cost_0(\Theta^Tf^{(i)})] + \frac{1}{2} \sum_{j=1}^m \Theta_j^2 $$
+
+(Notice the f replacing x in both cost functions and also the m replacing n in the regularization part.  Since we've created a feature for each sample, now n = m or the number of samples is the same as the number of features except for the interceptor $f_0$)  Also, as an aside, most support vector machine implementation change the regularization part to be $\Theta^T\Theta$.  That and some other trickery makes it possible for SVMs to be more efficient at computation over problems with a large number of features (10, 10k).  SVMs and Kernels work well together but kernels don't work that well with logistic regression - it'll run slowly.  Bottom line, use software packages instead or rolling your own.
+
+### Bias and variance trade-offs when using SVMS
+Large value of C or small value of $\sigma^2$ = lower bias, high variance, overfitting tendency
+Small value of C or large value of $\sigma^2$ = higher bias, lower variance, underfitting tendency
+
+### SVMs in practice
+Need to choose C and kernel to use
+  - linear kernel is no kernel at all - use if you have a large number of features, small number of training set where you might risk overfitting
+  - Gaussian kernel - if you choose this, you need to also choose a $\sigma^2$ - use for complex, non-linear hypothesis.  You'll have to provide a function to compute the kernel.  Wow, these will automatically compute the features from this function.
+
+It's important to do feature scaling because a Gaussian kernel computing differences between x and l (landmarks), could be very different. (Consider house square feet vs. number of bedrooms.)  Not all similarity functions make valid kernels.  A few valid others are: Polynomial kernel: k(x, l) = $(X^Tl)^2$.  That's just one version - but usually you need to provide the degree of polynomial and a constant that's added to that equation.
+
+But all valid kernels are so-called similarity kernels.  String kernel, chi-square, etc.
+
+How to decide whether to use SVM or logistic regression?  Ng equated logistic regression and an SVM with a "linear" kernel (no kernel).  The only case where he recommends an SVM with a Gaussian function is when n is small (< 1000 or so) and m is of intermediate size (< 10,000).  What about neural networks?  They can work well under most conditions but could be slower to train.  For SVMs, you don't have to worry about local minima since the
