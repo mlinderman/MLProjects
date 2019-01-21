@@ -49,9 +49,10 @@ x = zeros(n, 1);
 %
 
 
+% so, we have a word_indices vector like [23, 34, 584, 887, 983]  (not necessarily in order)
+% and we want a 1 in each of those positions in x (already initialized to be zero and the length of all possible vocab words)
 
-
-
+x(word_indices) = 1;
 
 
 

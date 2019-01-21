@@ -97,13 +97,13 @@ while ~isempty(email_contents)
     %       str2). It will return 1 only if the two strings are equivalent.
     %
 
-
-
-
-
-
-
-
+    % brute force search cuz cell arrays aren't associative arrays
+    % so vocabList can't be searched accessed by anything but the index
+    for idx = 1:length(vocabList)
+        if strcmp(vocabList{idx}, str) == 1
+            word_indices = [word_indices; idx];
+        end
+    end
 
 
     % =============================================================

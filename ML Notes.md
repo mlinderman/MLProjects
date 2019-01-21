@@ -430,9 +430,11 @@ Large value of C or small value of $\sigma^2$ = lower bias, high variance, overf
 Small value of C or large value of $\sigma^2$ = higher bias, lower variance, underfitting tendency
 
 ### SVMs in practice
-Need to choose C and kernel to use
+Need to choose C, sigma and kernel to use
   - linear kernel is no kernel at all - use if you have a large number of features, small number of training set where you might risk overfitting
   - Gaussian kernel - if you choose this, you need to also choose a $\sigma^2$ - use for complex, non-linear hypothesis.  You'll have to provide a function to compute the kernel.  Wow, these will automatically compute the features from this function.
+
+Choosing the best C and sigma values can be done (as in the homework) by training against a range of values for each - all combinations.  During that iterative training, you keep track of the C, sigma and percentage of missed estimates each combination's model produces against the *validation set*.  After all combinations' results are recorded, find the minimum missed estimate percentage in (presumably) a vector or matrix you used for that purpose and use that value of C and sigma to train the best model.  If this iterative training took a long time, you'd obviously want to save the models that resulted for each so that you wouldn't have to do it again for the final version.  
 
 It's important to do feature scaling because a Gaussian kernel computing differences between x and l (landmarks), could be very different. (Consider house square feet vs. number of bedrooms.)  Not all similarity functions make valid kernels.  A few valid others are: Polynomial kernel: k(x, l) = $(X^Tl)^2$.  That's just one version - but usually you need to provide the degree of polynomial and a constant that's added to that equation.
 
