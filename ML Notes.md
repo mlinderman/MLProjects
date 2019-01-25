@@ -441,3 +441,42 @@ It's important to do feature scaling because a Gaussian kernel computing differe
 But all valid kernels are so-called similarity kernels.  String kernel, chi-square, etc.
 
 How to decide whether to use SVM or logistic regression?  Ng equated logistic regression and an SVM with a "linear" kernel (no kernel).  The only case where he recommends an SVM with a Gaussian function is when n is small (< 1000 or so) and m is of intermediate size (< 10,000).  What about neural networks?  They can work well under most conditions but could be slower to train.  For SVMs, you don't have to worry about local minima since the
+
+
+
+# Unsupervised Learning
+Unsupervised learning problems have no labels, no y's.  So you try to find some structure in the dataset.
+
+### K-Means clustering
+This is one way to find structure/patterns in the data.  K-means is the most widely used clustering algorithm.  Clustering helps you group the data - like market segmentation, social network analysis, organizing data centers better (see which servers talk to each other the most)
+
+For k-means clustering, you pick K random centroids (these are usually randomly selected samples from the dataset).  And then you assign samples to clusters based on which centroid is nearest.  After that, you re-locate the centroids to be at the average of its assigned samples.  You do this iteratively for some number of repetitions or until the cost stabilizes (the centroids don't move that much).
+
+1.  Randomly initialize K centroids
+2.  Assign samples to centroids
+3.  Move centroids to the average of all the assigned samples
+4.  Repeat steps 2, 3 for n iterations
+
+K-means algorithm, more formally:
+ - don't use a $x^{(0)}
+ - $\mu$ is used to denote cluster centroids, $\mu_1, \mu_2, .....  \mu_K$
+ - to measure distance to each centroid, you should be able to do vector subtraction and element-by squaring and then summing.  Here's the distance:
+
+ $$ ||x^{(i)} - \mu_k||^2 $$
+
+ The cost function is then mean squared differences of distances between samples and assigned cluster centroids:
+
+ $$ \frac{1}{m} \sum_{i=1}^m||x^{(i)} - \mu_{c^{(i)}}||^2 $$
+
+To move the centroids, find the mean of all the assigned samples.  This must mean that you're finding means for each term of the samples assigned to the cluster.  If any clusters get no samples assigned, you should just eliminate that cluster OR randomly re-assign centroids and try again.
+
+The result of these iterative moves of cluster centrods then is to attempt to minimize the cost function - also called the "distortion" of the k-means algorithm.
+
+When you do the random initialization of K's, you may unluckily choose K's that don't result in minimization to a global minimum but to a local one.  In order to avoid this, you should pick randomly multiple times measuring the cost for each initialized set of Ks.  And then choose the initialization set of K's that have the lowest cost before starting the iterative process that adjusts the location of the Ks.  You would typically do this between 50 and 1000 times.  With a number of clusters between 2 and 10, this works pretty well.  With higher number of Ks, it won't make much of a difference, however, but I think you're also less likely to find local optima with lots of Ks.
+
+Choosing number of clusters (K): you can use the elbow method (finding where the cost of clustering levels out when graphed against the number of clusters). That's not always a clear point, however.  Or you can ask about the purpose and what number of clusters would best serve the purpose.  In the t-shirt size example - finding size ranges to make up XS/S/M/L/XL, maybe it makes more sense to support fewer sizes (S/M/L) because it might be cheaper to manufacture.  In the end, often by-hand choices for K are often the most practical.
+
+### Dimensionality Reduction
+This is another unsupervised learning algorithm.  It serves the purpose of finding highly correlated (linearly related) features and making a single feature out of those by combining them into a different feature.  So one number takes the place of two in Ng's case of rounded cm and rounded inch features.  The end result is that your final learning algorithm will take less memory and run faster. 
+
+With 3 dimensions, you can possibly reduce them to 2 if you can determine that they are correlated roughly to the same plane (a 2d space).  With both the 2d and 3d reductions, you need to "project" the data onto fewer dimensions. 
