@@ -479,4 +479,84 @@ Choosing number of clusters (K): you can use the elbow method (finding where the
 ### Dimensionality Reduction
 This is another unsupervised learning algorithm.  It serves the purpose of finding highly correlated (linearly related) features and making a single feature out of those by combining them into a different feature.  So one number takes the place of two in Ng's case of rounded cm and rounded inch features.  The end result is that your final learning algorithm will take less memory and run faster. 
 
-With 3 dimensions, you can possibly reduce them to 2 if you can determine that they are correlated roughly to the same plane (a 2d space).  With both the 2d and 3d reductions, you need to "project" the data onto fewer dimensions. 
+With 3 dimensions, you can possibly reduce them to 2 if you can determine that they are correlated roughly to the same plane (a 2d space).  With both the 2d and 3d reductions, you need to "project" the data onto fewer dimensions. And it's important to note that finding a line through 2 dimensional data like this with dimensionality reduction is *not* the same as finding a line through the data as with linear regression.  Why not?  Well, Ng described the difference like this: projection finds the perpendicular distance (shortest) to the line whereas linear regression finds the vertical distance to the proposed line.  Ok, I'm willing to accept that because in linear regression, it's the difference between what the hypothesis predicts and a label (a y value) for a given X sample.  But with dimensionality reduction, there are no y values (it's unsupervised learning) so you're not interested in the difference in the y predicted and the y supplied but instead just the shortest distance to the line - the projection.  And no particular dimension is treated differently from the rest.  I think what that means is that there are no weights in PCA but see below about how PCA is performed.
+
+With dimensionality reduction, you can even take 50 dimensions down to 2 or 3 with the resulting dimensions not really having any meaning but making it possible to visualize the data by plotting it and gaining some insights about it in order to eliminate or consolidate dimensions.
+
+#### Prinipal Component Analysis
+Find a lower dimensional surface onto which to project the data (a line or plane) so that the sum of squares of distances to the surface is minimized.  By the way, feature scaling is important to do before you project data onto a surface.  So, objective is to find a vector onto which to project the data so that it results in small "reconstruction" errors.  To project onto 2 dimensions or 3, you'd need to find 2 or 3 vectors, respectively, describing the surface.  The objective is to miminize the projection error.
+
+##### The PCA Algorithm
+You must do mean normalization and feature scaling first.  That's the same as before but seems unfamiliar now.  Mean normalization will just take the average of the feature values and find the mean and then replace the feature value with the feature value minus the mean:
+
+$$ \mu_j = \frac{1}{m} \sum_{i=1}^m x_j^{(i)} $$
+
+to find the mean, then:
+
+$$ x_j^{(i)} = x_j - \mu_j $$
+
+to replace each sample's value for that feature with a mean-normalized value.  Ng says that then all features will have a zero mean.  Hadn't thought of it that way but I guess it's true since all values will have the mean subtracted, if you calculated the mean again, it would be zero.
+
+Then do feature scaling, same as before with supervised learning:
+
+$$  x^{(i)}_j = \frac{x^{(i)}_j - \mu_j}{\sigma_j} $$
+
+Sigma is the standard deviation of the feature.  But other values (like max minus min) can be used less commonly.
+
+Keep in mind that the goal is to translate a point in 2 dimensional space (x,y) to a single value in 1-dimensional space (a line).  For 3 to 2 dimensions, we'll get (x,y) from (x,y,z). So, you need to compute the vector or vectors onto which to project the data.  Turns out, the math is very complicated but the procedure isn't.  The mathematical proof Ng did not go into.
+
+So the procedure is that first, you compute the "covariance" matrix (called Sigma, which, confusingly, is not a sum operation though it looks a lot like one and is also not *not* the standard deviation). And then use that matrix called Sigma to compute the "eigenvectors" of that matrix.  Say what?  He glossed over the details but computing eigenvectors is the same as a "single value decomposition".  You can do this in octave using the svd function.  There are equivalents in other languages (like Python, I'd assume).  The octave svd function, returns 3 vectors, U, S and V - or maybe that's a matrix...
+
+To compute the covariance matrix, you take each sample row and multiply it by it's transposed version (producing an n x n matrix) and then add them all together which still results in an n x n matrix.  Averaging that over the number of features ($\frac{1}{m}$) just gives you a different n x n matrix.  That's $\Sigma$.    
+
+$$ \Sigma = \frac{1}{m}\sum_{1-1}^n(x^{(i)})(x^{(i)})^T $$
+
+And then (in octave):
+
+$$ [U,S,V] = svd(\Sigma) $$
+
+And what you get as a result is 3 things and you care only about the U matrix which, it turns out, is also an n x n matrix.  Then, if the goal is to project n dimensions down to k dimensions, you then just take the first k columns of the U matrix so you have an n x k matrix that we'll call $U_{reduce}$  To arrive at our new reduced feature set z, you then multiply transposed $U_{reduce}$ by X where (this is critical), X is a single column (one feature) of X .  That's an n x k matrix times an n x m matrix (which doesn't seem right - Ng describes the X as n x 1 vector, which would really be a single column of X).  The fact that you're transposing $U_reduce$, however means that the matrix will be k x n when it's multiplied.  And k x n multiplied by n x m would equal k x m - still doesn't make sense as you're trying to reduce to k dimensions and now you have a new-dimensions x old-dimensions matrix.  This is confusing.  Later, in the summary of this, Ng describes X as "a feature vector X", not a matrix.  So maybe he's taking a single feature at a time...
+
+To summarize that math:
+
+Vectorized sigma calculation (from above):
+
+$$ \Sigma = \frac{1}{m} * X^T * X $$
+
+Note that that will result in an m x n times an n x m which will result in an m x m matrix, at least from what I undestand.  But it seems that Ng starts with a different orientation of X.
+
+Then:
+
+$$ [U,S,V] = svd(\Sigma) $$
+
+then, understanding that z is the reduced feature set we're looking for, 
+
+$$ z = U_{reduce}^T * x; $$
+
+That x, by the way is what Ng describes as a feature vector.
+
+Turns out, PCA can be used to re-create an approximation of the original (say 1000 dimensions) from 100 dimensions produced by PCA.  Like this:
+
+$$ x = U_{reduce} * z $$
+
+I have some issues with the matrix/vector arrangement but the bigger point is that it's also not clear why you'd need to reproduce the original unless...
+
+How to pick k (the number of dimensions to reduce to) anyway?  You pick it so that 99% of the variance is maintained.  What? PCA attempts to minimize the average squared projection error (the distance between the original feature and the surface to which it's projected):
+
+$$ \frac{1}{m} \sum_{i=1}^m ||x^{(i)} - x_{approx}^{(i)}||^2 $$
+
+Another definition that's useful here: total variation in the data (how far the training examples are from being all zeros) - having nothing to do wth PCA but useful in choosing k.  The formula for that is:
+
+$$ \frac{1}{m} \sum_{i=1}^m ||x^{(i)}||^2 $$
+
+And you use these two formulas together to calculate the "% variance retained" after PCA is performed and ensure that it's 99% or greater:
+
+$$ \frac{  \frac{1}{m} \sum_{i=1}^m ||x^{(i)} - x_{approx}^{(i)}||^2  }{ \frac{1}{m} \sum_{i=1}^m ||x^{(i)}||^2 } <= 0.01 $$
+
+
+
+
+
+
+
+
