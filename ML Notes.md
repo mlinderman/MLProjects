@@ -501,46 +501,48 @@ Then do feature scaling, same as before with supervised learning:
 
 $$  x^{(i)}_j = \frac{x^{(i)}_j - \mu_j}{\sigma_j} $$
 
-Sigma is the standard deviation of the feature.  But other values (like max minus min) can be used less commonly.
+Sigma is the standard deviation of the feature.  But other values (like max minus min) can be used less commonly.  Again, this is the same as before.
 
 Keep in mind that the goal is to translate a point in 2 dimensional space (x,y) to a single value in 1-dimensional space (a line).  For 3 to 2 dimensions, we'll get (x,y) from (x,y,z). So, you need to compute the vector or vectors onto which to project the data.  Turns out, the math is very complicated but the procedure isn't.  The mathematical proof Ng did not go into.
 
-So the procedure is that first, you compute the "covariance" matrix (called Sigma, which, confusingly, is not a sum operation though it looks a lot like one and is also not *not* the standard deviation). And then use that matrix called Sigma to compute the "eigenvectors" of that matrix.  Say what?  He glossed over the details but computing eigenvectors is the same as a "single value decomposition".  You can do this in octave using the svd function.  There are equivalents in other languages (like Python, I'd assume).  The octave svd function, returns 3 vectors, U, S and V - or maybe that's a matrix...
+So the procedure is that first, you compute the "covariance" matrix (called Sigma, which, confusingly, is not a sum operation though it looks a lot like one and is also *not* the standard deviation). And then use that matrix called Sigma to compute the "eigenvectors" of that matrix.  Say what?  He glossed over the details but computing eigenvectors is the same as a "single value decomposition".  You can do this in octave using the svd function.  There are equivalents in other languages (like Python, I'd assume).  The octave svd function, returns 3 vectors, U, S and V - or maybe that's a matrix...
 
-To compute the covariance matrix, you take each sample row and multiply it by it's transposed version (producing an n x n matrix) and then add them all together which still results in an n x n matrix.  Averaging that over the number of features ($\frac{1}{m}$) just gives you a different n x n matrix.  That's $\Sigma$.    
+So, to get into the details, to compute the covariance matrix, you take each sample *column*, or feature (not rows this time), and multiply it by it's transposed version (producing an n x n matrix) and then add them all together which still results in an n x n matrix. (Don't forget: n is the feature index and m the samples index.)  Averaging that over the number of samples ($\frac{1}{m}$) just gives you a different n x n matrix.  That's $\Sigma$.    
 
-$$ \Sigma = \frac{1}{m}\sum_{1-1}^n(x^{(i)})(x^{(i)})^T $$
+$$ \Sigma = \frac{1}{m}\sum_{1-1}^m(x^{(i)})(x^{(i)})^T $$
 
-And then (in octave):
+That's from Ng.  But it can't be right since he claims it'll result in an n x n matrix. But if $x^{(i)}$ is a single example, a row, as it's always been throughout the course, then this will result in 1 x 1 vector.  But it doesn't matter since the vectorized version below does look like it will return an n x n matrix.  So, moving on, the next step (in octave):
 
 $$ [U,S,V] = svd(\Sigma) $$
 
-And what you get as a result is 3 things and you care only about the U matrix which, it turns out, is also an n x n matrix.  Then, if the goal is to project n dimensions down to k dimensions, you then just take the first k columns of the U matrix so you have an n x k matrix that we'll call $U_{reduce}$  To arrive at our new reduced feature set z, you then multiply transposed $U_{reduce}$ by X where (this is critical), X is a single column (one feature) of X .  That's an n x k matrix times an n x m matrix (which doesn't seem right - Ng describes the X as n x 1 vector, which would really be a single column of X).  The fact that you're transposing $U_reduce$, however means that the matrix will be k x n when it's multiplied.  And k x n multiplied by n x m would equal k x m - still doesn't make sense as you're trying to reduce to k dimensions and now you have a new-dimensions x old-dimensions matrix.  This is confusing.  Later, in the summary of this, Ng describes X as "a feature vector X", not a matrix.  So maybe he's taking a single feature at a time...
+And what you get as a result is 3 things and you care only about the U matrix which, it turns out, is also an n x n matrix.  And each column of that U matrix is the vector we wanted to find to project the features onto to reduce them.  Then, if the goal is to project n dimensions down to k dimensions, you then just take the first k columns of the U matrix so you have an n x k matrix that we'll call $U_{reduce}$  To arrive at our new reduced feature set z, you then multiply transposed $U_{reduce}$ by X where (this is critical), X is a single column (one feature) of X as in the Sigma calculation above.  That's an n x k matrix times an n x 1 matrix.  The fact that you're transposing $U_reduce$, however means that the matrix will be k x n when it's multiplied.  And k x n multiplied by n x 1 would equal k x 1 vector and that's your new feature - same from 1 to k features.
 
-To summarize that math:
+To summarize the math for the complete PCA, after mean normalization and feature scaling:
 
 Vectorized sigma calculation (from above):
 
 $$ \Sigma = \frac{1}{m} * X^T * X $$
 
-Note that that will result in an m x n times an n x m which will result in an m x m matrix, at least from what I undestand.  But it seems that Ng starts with a different orientation of X.
+Note that that will result in an n x m times an m x n which will result in an n x n matrix, just like the non-vectorized equation above.  So that much matches, at least.  
 
 Then:
 
 $$ [U,S,V] = svd(\Sigma) $$
 
-then, understanding that z is the reduced feature set we're looking for, 
+U from that vector is a n x n matrix and you take the first k columns to make a new matrix which we'll call $U_{reduce}$ and is n x k.  Then, understanding that Z is the reduced feature set we're looking for:
 
-$$ z = U_{reduce}^T * x; $$
+$$ Z = X * U_{reduce} $$
 
-That x, by the way is what Ng describes as a feature vector.
+Remember that $U_{reduce}$ is n x k.  And X is m x n.  So the n's line up and you get a m x k matrix which is exactly what we're looking for - a reduced feature matrix.
 
+##### Recreation of the original matrix (approximately)
 Turns out, PCA can be used to re-create an approximation of the original (say 1000 dimensions) from 100 dimensions produced by PCA.  Like this:
 
-$$ x = U_{reduce} * z $$
+$$ X = Z * U_{reduce}^T $$
 
-I have some issues with the matrix/vector arrangement but the bigger point is that it's also not clear why you'd need to reproduce the original unless...
+That's m x k times k x n which will yield an m x n matrix, the dimensions of the original.  By the way, I had to manipulate this a bit to get that result from what Ng proposed.
 
+##### How to pick the number of dimensions
 How to pick k (the number of dimensions to reduce to) anyway?  You pick it so that 99% of the variance is maintained.  What? PCA attempts to minimize the average squared projection error (the distance between the original feature and the surface to which it's projected):
 
 $$ \frac{1}{m} \sum_{i=1}^m ||x^{(i)} - x_{approx}^{(i)}||^2 $$
@@ -554,7 +556,7 @@ And you use these two formulas together to calculate the "% variance retained" a
 $$ \frac{  \frac{1}{m} \sum_{i=1}^m ||x^{(i)} - x_{approx}^{(i)}||^2  }{ \frac{1}{m} \sum_{i=1}^m ||x^{(i)}||^2 } <= 0.01 $$
 
 
-
+So, PCA can be used to speed up a learning algorithm - very common to do this, apparently.  If you had 10k features, for example, from 100x100 images.  That could make for a slow algorithm, no matter what technique you use.
 
 
 
