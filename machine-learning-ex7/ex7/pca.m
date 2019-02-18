@@ -20,10 +20,9 @@ S = zeros(n);
 %       number of examples).
 %
 
-
-
-
-
+% calling it covariance here - also commonly known as Sigma
+covariance = (1/m) * transpose(X) * X;
+[U, S, _] = svd(covariance);
 
 
 % =========================================================================

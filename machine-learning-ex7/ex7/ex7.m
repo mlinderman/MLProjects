@@ -164,7 +164,7 @@ idxB = findClosestCentroids(Y, centroidsB);
 % indices in idx. 
 
 % We can now recover the image from the indices (idx) by mapping each pixel
-% (specified by its index in idx) to the centroid value
+% (specified by its index in idx) to the centroid value (1 of 16 colors)
 X_recovered = centroids(idx,:);
 Y_recovered = centroidsB(idxB,:);
 

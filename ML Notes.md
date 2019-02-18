@@ -507,11 +507,11 @@ Keep in mind that the goal is to translate a point in 2 dimensional space (x,y) 
 
 So the procedure is that first, you compute the "covariance" matrix (called Sigma, which, confusingly, is not a sum operation though it looks a lot like one and is also *not* the standard deviation). And then use that matrix called Sigma to compute the "eigenvectors" of that matrix.  Say what?  He glossed over the details but computing eigenvectors is the same as a "single value decomposition".  You can do this in octave using the svd function.  There are equivalents in other languages (like Python, I'd assume).  The octave svd function, returns 3 vectors, U, S and V - or maybe that's a matrix...
 
-So, to get into the details, to compute the covariance matrix, you take each sample *column*, or feature (not rows this time), and multiply it by it's transposed version (producing an n x n matrix) and then add them all together which still results in an n x n matrix. (Don't forget: n is the feature index and m the samples index.)  Averaging that over the number of samples ($\frac{1}{m}$) just gives you a different n x n matrix.  That's $\Sigma$.    
+So, to get into the details, to compute the covariance matrix, you take each sample *column*, or feature (not rows this time), and multiply it by it's transposed version (producing an n x n matrix) and then add all the matrices that result (1 per feature)together.  The result is still an n x n matrix. (Don't forget: n is the feature index and m the samples index.)  Averaging that over the number of samples ($\frac{1}{m}$) just gives you a different n x n matrix.  That's $\Sigma$.    
 
-$$ \Sigma = \frac{1}{m}\sum_{1-1}^m(x^{(i)})(x^{(i)})^T $$
+$$ \Sigma = \frac{1}{m}\sum_{i-1}^m(x^{(i)})(x^{(i)})^T $$
 
-That's from Ng.  But it can't be right since he claims it'll result in an n x n matrix. But if $x^{(i)}$ is a single example, a row, as it's always been throughout the course, then this will result in 1 x 1 vector.  But it doesn't matter since the vectorized version below does look like it will return an n x n matrix.  So, moving on, the next step (in octave):
+That's from Ng.  But it can't be right since he claims it'll result in an n x n matrix.   But if $x^{(i)}$ is a single example, a row, as it's always been throughout the course, then this will result in 1 x 1 vector.  (I think he must mean to reverse those two terms, transposed one first.) It doesn't matter since the vectorized version below does look like it will return an n x n matrix.  So, moving on, the next step (in octave):
 
 $$ [U,S,V] = svd(\Sigma) $$
 
