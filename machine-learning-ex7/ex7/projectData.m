@@ -18,8 +18,10 @@ Z = zeros(size(X, 1), K);
 %                    projection_k = x' * U(:, k);
 %
 
-Z = X * U(:, K);
+% result should be 5000 x 100 for the faces dataset because we're projecting down to 100 features from 1024
+% because X is 5000 x 1024 and U is 1024 x 1024 (remember, U was calculated by multiplying X by transpose(X)
 
+Z = X * U(:, 1:K);
 
 % =============================================================
 

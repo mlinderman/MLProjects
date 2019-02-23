@@ -144,6 +144,8 @@ pause;
 %  If you are applying a machine learning algorithm 
 fprintf('\nDimension reduction for face dataset.\n\n');
 
+fprintf('\nSize of X_norm before projection onto Z: ')
+fprintf('%d ', size(X_norm));
 K = 100;
 Z = projectData(X_norm, U, K);
 
