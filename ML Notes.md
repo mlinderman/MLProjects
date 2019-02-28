@@ -559,6 +559,43 @@ $$ \frac{  \frac{1}{m} \sum_{i=1}^m ||x^{(i)} - x_{approx}^{(i)}||^2  }{ \frac{1
 So, PCA can be used to speed up a learning algorithm - very common to do this, apparently.  If you had 10k features, for example, from 100x100 images.  That could make for a slow algorithm, no matter what technique you use.
 
 
+### Density Estimation / Anomoly detection
+This is a technique to do anomoly detection.  As Ng, describes it, imagine you're trying to test jet engines as they come off the assembly line.  Each engine has a number of features.  And each feature coud have a measurement that should fall into a certain range.  Ranges for each feature would be different obviously and they could be thought of as each being distributed within a Gaussian (bell) curve of values.  Each gaussian is described by way of a mean (the $\mu$) and a standard deviation $\sigma$.  Actually, the $\sigma$ can also be described as a "variance" but then it's $\sigma^2$.  
 
+So, for anomoly detection, you have an algorithm defined by the probability of each feature falling in it's gaussian defined by a $\mu$ and a $\sigma^2$.  That algorithm looks like this:
+
+$$ \prod_{j=1}^n p(x_j;\mu_j, \sigma_j^2) $$
+
+That's a product symbol by the way, just like summation but multiplication instead.  This formula is density estimation.  So, anomoly detection steps:
+
+1.  Identify features that might take on unusually large or small values in anomolous cases.  Or just representative features.
+2.  Fit (calculate) the parameters $\mu$ and $\sigma^2$ for each feature like so:
+
+    $$ \mu_j = \frac{1}{m} \sum_{i=1}^m x_j^{(i)} $$
+    $$ \sigma^2_j = \frac{1}{m} \sum_{i=i}^m (x_j^{(i)} - \mu_j)^2 $$
+
+(Computing for each feature - can be vectorized, btw, see later, hopefully)
+
+3.  compute p(x) for each sample and see if probability is very low (less than some valu $\epsilon$).  For that, you just need to multiply all the p(x) values together for each feature.  Interestingly enough, with 2 feature samples, multiplying these together can be graphed in 3 dimensions where the height is the probability ( p(x) ).  I'm not really convinced but Ng says that multiplication is the same as this formula (so why use it if it can be done more simply?):
+
+$$ \prod_{j=1}^n \frac{1}{\sqrt{2\pi}\sigma_j}\exp(-\frac{(x_j - \mu_j)^2}{2\sigma^2_j}) $$
+
+So how do you choose the threshold between what is ok and what is an anomoly?  And how do you evaluate your anomoly detection algorithm?  For the latter question, you need some labeled data for a validation and test set.  Assuming the test set is skewed (lots more normal then anomolous samples), you'd have a bunch of those - put them all in the training set - maybe 60% - and then 20/20 split between validation and test.  And then distribute your anomolous samples across the validation and test sets.  Usually for anomoly detection, you have a lot more normal samples than you do anomolous.
+
+Then fit $\mu$ and $\sigma^2$ with the training set, as described above.  And plug in validation samples to see if the result is > or < $\epsilon$.  At this point, you've selected $\epsilon$ pretty arbitrarily so calculate true positivies, false positives, true negatives and false negatives so that you can then calculate precision, recall and F1 score.  Classification accuracy is not a good metric here because if you predicted 1 every time (normal), you'd get pretty good performance because the data is skewed toward normal samples.  
+
+Finally, to choose a good value for $\epsilon$ you can use the validation set, vary it and pick the value that maximizes F1 score or gets the best balance between precision and recall.  Then you'd take the final model and evaluate it on the test set.
+
+So, since we have labeled data here, why not just treat this as a supervised learning problem - with weights applied to features in logistic regression or a neural network?  
+
+Anomoly detection:
+- very small number of positive examples (anomolous ones) and large number of negative examples (normal ones).  In this case, you're mostly relying on - negative examples with your skewed dataset.
+- many different types of anomolies so a supervised learning algorithm would predict mostly what it's seen in training 
+        but that wouldn't work as well on anomolies are completely different
+
+For supervised learning:
+- a large number of positive and negative examples
+- enough positive examples to get a sense of what all positives might look like.
+- example: Spam email detection - usually a large number of both positive and negative examples
 
 
