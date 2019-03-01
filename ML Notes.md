@@ -571,10 +571,14 @@ That's a product symbol by the way, just like summation but multiplication inste
 1.  Identify features that might take on unusually large or small values in anomolous cases.  Or just representative features.
 2.  Fit (calculate) the parameters $\mu$ and $\sigma^2$ for each feature like so:
 
-    $$ \mu_j = \frac{1}{m} \sum_{i=1}^m x_j^{(i)} $$
-    $$ \sigma^2_j = \frac{1}{m} \sum_{i=i}^m (x_j^{(i)} - \mu_j)^2 $$
+$$ \mu_j = \frac{1}{m} \sum_{i=1}^m x_j^{(i)} $$  
 
-(Computing for each feature - can be vectorized, btw, see later, hopefully)
+and:
+
+$$ \sigma^2_j = \frac{1}{m} \sum_{i=i}^m (x_j^{(i)} - \mu_j)^2 $$  
+
+Computing for each feature - both can be vectorized, btw, see later, hopefully
+
 
 3.  compute p(x) for each sample and see if probability is very low (less than some valu $\epsilon$).  For that, you just need to multiply all the p(x) values together for each feature.  Interestingly enough, with 2 feature samples, multiplying these together can be graphed in 3 dimensions where the height is the probability ( p(x) ).  I'm not really convinced but Ng says that multiplication is the same as this formula (so why use it if it can be done more simply?):
 
@@ -599,3 +603,15 @@ For supervised learning:
 - example: Spam email detection - usually a large number of both positive and negative examples
 
 
+#### How to select features for an anomoly detection algorithm
+
+You can look at the data for any given feature (or all), they should look gaussian (have a bell curve).  If they don't, you can transform so that they do.  You could try log(x) on a feature x rather than just x.  If that looks more gaussian, you could use that instead in anomoly detection.  Ng also recommends other transformations like $log(x + 1), log(x + c)$ where c is some variable
+
+Or, $\sqrt(x) = x^{\frac{1}{2}}$ or $x^{\frac{1}{3}}$ etc.  Playing around with those variables (exponents) can make your feature data more gaussian.  Interestingly, log and adding exponents do a pretty good job of making a histogram of your feature more gaussian.
+
+To select features for anomoly detection, you want those where p(x) is large for normal examples and small for anomolous ones.  If you don't have that, look at some anomolous examples and make new features out of them using what makes the example unusual.  Choose features that take on very large or very small values for anomolous examples.  You could combine features. Example, using network machine farm, take cpu load and network traffic and combine so that you're dividing CPU load by network traffic rather than the two attributes by themselves.  In other words, figure out why the sample is anomolous and make features by turning that understanding into a combination of data elements in the example.
+
+#### Multivariate Gaussian distribution
+Can sometimes catch anomolous examples that previous algorithm using one feature at a time with a symmetrical gaussian (in 3D) doesn't see.  Again taking the example of machines in a data center.  CPU and memory by themselves may not look that anomalous to the algorithm but when the combination of the two, you can detect the anomolous combination of relatively high memory use and relatively low CPU simultaneously which would be an anomoly.
+
+The covariance matrix between features gets us a 3d gaussian (if you have 2 features).  Features that are move in a correlated, will produce a more oval 3D gaussian.  Features that move in an inverse way will also produce a more oval gaussian but in the opposite direction.  For correlation between 2 features, think of what that looks like in a two dimensional graph (a line from bottom left to upper right).  For inverse relationships, the line is from upper left to lower right).  As the $\mu$ (median varies) for the 2 examples, away from zero, the 3D gaussian will be off center.
