@@ -612,6 +612,90 @@ Or, $\sqrt(x) = x^{\frac{1}{2}}$ or $x^{\frac{1}{3}}$ etc.  Playing around with 
 To select features for anomoly detection, you want those where p(x) is large for normal examples and small for anomolous ones.  If you don't have that, look at some anomolous examples and make new features out of them using what makes the example unusual.  Choose features that take on very large or very small values for anomolous examples.  You could combine features. Example, using network machine farm, take cpu load and network traffic and combine so that you're dividing CPU load by network traffic rather than the two attributes by themselves.  In other words, figure out why the sample is anomolous and make features by turning that understanding into a combination of data elements in the example.
 
 #### Multivariate Gaussian distribution
-Can sometimes catch anomolous examples that previous algorithm using one feature at a time with a symmetrical gaussian (in 3D) doesn't see.  Again taking the example of machines in a data center.  CPU and memory by themselves may not look that anomalous to the algorithm but when the combination of the two, you can detect the anomolous combination of relatively high memory use and relatively low CPU simultaneously which would be an anomoly.
+Can sometimes catch anomolous examples that previous algorithm using one feature at a time with a symmetrical gaussian (in 3D) doesn't see.  Again taking the example of machines in a data center, CPU and memory by themselves may not look that anomalous to the algorithm but with the combination of the two, you can detect the anomolous combination of relatively high memory use and relatively low CPU simultaneously which would be an anomoly.
 
 The covariance matrix between features gets us a 3d gaussian (if you have 2 features).  Features that are move in a correlated, will produce a more oval 3D gaussian.  Features that move in an inverse way will also produce a more oval gaussian but in the opposite direction.  For correlation between 2 features, think of what that looks like in a two dimensional graph (a line from bottom left to upper right).  For inverse relationships, the line is from upper left to lower right).  As the $\mu$ (median varies) for the 2 examples, away from zero, the 3D gaussian will be off center.
+
+For multivariate guassian, we take all features at once rather than calculating $\mu$ and $\sigma^2$ for each feature.  The formula for that which yu can easily look up is:
+
+$$ p(x;\mu, \Sigma) = \frac{1}{(2\pi)^{\frac{n}{2}} |{\Sigma}|^{\frac{1}{2}}}\exp(-\frac{1}{2}(x-\mu)^T\Sigma^-1(x-\mu)) $$
+
+
+By the way, keep in mind that $\Sigma$ is the covariance matrix (n x n) and that $|\Sigma|$ is the "determinant" of $\Sigma$.  The result of this equation above for 2 features will give you a 3D guassian curve as above.  But if the sigmas for the features are different, you'll get a non-round, oval shape.  The multi-variate gaussian distribution is useful for anomly detection when you suspect there's positive or negative correlation between features.
+
+When fitting for multiple variate gaussian distribution (determining, $\mu$ and $\Sigma$), the formulas are slightly different:
+
+$$ \mu = \frac{1}{m}\sum_{i=i}^mx^{(i)}  $$
+
+
+$$ \Sigma = \frac{1}{m}\sum_{i=i}^m(x^{(i)}-\mu)(x^{(i)}-\mu)^T $$
+
+You're building a covariance matrix (n x n) here above for $\Sigma$ that can be used when you apply the formula above to figure out the probability of a single new example.  If p(x) < $\epsilon$ then we flag it as an anomoly.  Interestingly, the normal gaussian distributiion can be modeled the same way and the multivariate case.  The single variable case just results in a model where the covariance matrix ($\Sigma$) has non-zero elements only on one axis.
+
+When to use original gaussian model vs multi-variate gaussian model:
+
+Original:
+- used more 
+- need to create new features relating existing ones to make this work when there is feature correlation
+- computationally cheaper - scales to large numbers of features
+- works even with a small training set.
+
+Multi-variate:
+- automatically captures correlations between features without having to create new features
+- computing the inverse of the $\Sigma$ matrix is expensive so this scales less well with large number of features
+- m (samples) must be greater than n (number of features).  If not $\Sigma$ is not invertible and that's required for multi-variate formula
+    $\Sigma$ works out to be about $\frac{n^2}{2}$ in size.
+- (if $\Sigma$ is non-invertible, you can try eliminating redundant features ("linearly dependent") to even be able to use multi-variate model at all)
+
+
+### Recommender Systems
+
+For some problems, there are some algorithms that can automatically learn what features to use.  Recommender systems are some of those algorithms.  Ng's example was about predicting movie ratings for users.  His premise is that, given some movie ratings for a particular user, you want to predict their ratings for movies they have not seen.  Movies have features to describe their attributes. In this example, they have 2 features, romance and action and they have a value between 0 and 1 to indicate how much of each is in each movie.  Ng adds a bias feature($x_0$) so we have 3.
+
+So, you could treat each user as a separate linear regression problem where the user is represented by the parameters (weights).  Going backwards, if a user typically rates a romance a 5 (1 to 5 scale) and give 0s to action movies, the parameters would need to be fit to predict those ratings based on the characteristics of any given move in terms of those features.  Remember you just multiply the features by the weights: $\Theta^TX$  To learn the parameter vector $\Theta^{(j)}$,  So, it's linear regression.  The cost function is like before in that it's the squared error (difference) between what $\Theta^TX$ results in minus the actual rating by the user.  So, formally, you want to minimize this cost function (where r(i,j) is whether the user j rated a movie i and $y^(i,j)$ is the rating by user j on movie i, $\Theta^{(j)}$ is the parameter vector for user j and $x^{(i)}$ is the feature vector for movie i and $m^{(j)}$ is the number of movies rated by user j (note how that's in the summation below - it's only the movies the user watched).  Regularization parameter added!):
+
+$$ J(\Theta) = \frac{1}{2m^{(j)}}\sum_{i:r(i,j)=1}((\Theta^{(j)})^T(x^{(i)}) - y^{(i,j)})^2 + \frac{\lambda}{2m^{(j)}}\sum_{k=1}^n(\Theta_k^{(j)})^2 $$
+
+Ng removes both the $m^{(j)}$ from both places in that formula since it's a constant and to simplify:
+
+$$ J(\Theta) = \frac{1}{2}\sum_{i:r(i,j)=1}((\Theta^{(j)})^T(x^{(i)}) - y^{(i,j)})^2 + \frac{\lambda}{2}\sum_{k=1}^n(\Theta_k^{(j)})^2 $$
+
+And, rather than just finding parameters for 1 user, let's do it from 1 to the number of users - all users ($\Theta^{(1)}$, $\Theta^{(2)}$....$\Theta^{(n_u)}$):
+
+$$ J(\Theta^{(1)}...\Theta^{(n_u)}) = \frac{1}{2}\sum_{j=1}^{n_u} \sum_{i:r(i,j)=1}((\Theta^{(j)})^T(x^{(i)}) - y^{(,j)})^2 + \frac{\lambda}{2}\sum_{j=1}^{n_u} \sum_{k=1}^n(\Theta_k^{(j)})^2 $$
+
+And finally, if you wanted to use gradient descent, it's almost exactly like gradient descent for linear regression.  The only difference is that the $\frac{1}{m^{(j)}}$ terms are removed (see above). For k = 0:
+
+$$\Theta^{(j)}_k = \Theta^{(j)}_k - \alpha \sum_{i:r(i,j)=1}((\Theta^{(j)})^T(x^{(i)}) - y^{(i,j)})x^{(i)}_k $$
+
+For k > 0 (with regularization):
+
+$$\Theta^{(j)}_k = \Theta^{(j)}_k - \alpha(\sum_{i:r(i,j)=1}((\Theta^{(j)})^T(x^{(i)}) - y^{(i,j)})x^{(i)}_k + \lambda\Theta^{(j)}_k)$$
+
+Or you could use the cost function with more advanced learning algorithms.
+
+#### Collaborative Filtering
+But the above recommender system as described assumes that you actually have feature values for every movie - which would require watching each one and populating all the features - probably not going to happen.  So we have no values for the features...  But what if we ask users to tell us what types of movies they like based on our categories?  Something like a brief survey on Netflix that asks you to select the features you like best - maybe on a 1-5 scale.  Then we don't have the feature values but the $\Theta$ vectors instead, 1 per user.  So we need to go backwards, taking the $\Theta$ vector for each user and asking what would the feature value be for a given movie/user to match those thetas - or what is $(\Theta^{(1)})^Tx^{(1)}$ so that it equals about 5, for example,  So you're using the user's ratings and the users preferences to find the feature values for the movie.  
+
+So, note that what we're learning here in the formula below!  It's the features of x^{(i)}, not the theta.
+
+$$ J(x^{(i)}) = \frac{1}{2}\sum_{i:r(i,j)=1}((\Theta^{(j)})^T(x^{(i)}) - y^{(i,j)})^2 + \frac{\lambda}{2}\sum_{k=1}^n(x_k^{(i)})^2 $$
+
+And to learn all the feature for all the movies ($n_m =$ number of movies):
+
+$$ J(x^{(1)}....x^{(n_m)}) = \frac{1}{2}\sum_{i=1}^{(n_m)}\sum_{i:r(i,j)=1}((\Theta^{(j)})^T(x^{(i)}) - y^{(i,j)})^2 + \frac{\lambda}{2}\sum_{i=1}^{(n_m)}\sum_{k=1}^n(x_k^{(i)})^2 $$
+
+So, given $\Theta$ values you can learn the x's and given the x's, you can learn the $\Theta$ values. You could also guess at the thetas and then learn the x's and then learn the thetas given the learned x's and go back and forth until the values converge to values that don't change that much with each iteration.  But you need a full set of ratings from each user over a full set of movies.  So the "collaboration" part is where each user is helping to refine the quality of the data used to recommend movies.
+
+But wait, there's a more succinct collaborative filtering algorithm that solves for both thetas and x's simultaneously.  Whoa. If you look at the two directions taken in the formulas above, minimizing Thetas and then miminizing x's, you'll see that the squared error terms are the same and that the summations just sum in the opposite order: when minimizing thetas, it sums from 1 to the number of users the sum found for each movie with a rating for that user.  When minimizing x's, it sums from 1 to the number of movies the sum found for each user with a rating for that movie.  The same thing.  So, you combine the two to minimize both Thetas and x's at the same time by just using one squared error term and both regularization terms:
+
+$$ J(x^{(1)}....x^{(n_m)}, \Theta^{(1)}....\Theta{(n_u)}) = \frac{1}{2}\sum_{(i,j):r(i,j)=1}((\Theta^{(j)})^T(x^{(i)}) - y^{(i,j)})^2 + \frac{\lambda}{2}\sum_{i=1}^{(n_m)}\sum_{k=1}^n(x_k^{(i)})^2 + \frac{\lambda}{2}\sum_{j=1}^{n_u}\sum_{k=1}^n(\Theta_k^{(j)})^2$$
+
+One important difference here from what we've done previously: since we're estimating features, there's no need to use an intercept or bias feature. The algorithm will effectively create it's own bias feature.  (I don't think that means it will actually create one but will make up for its absence by adjusting all other features).  So, putting it all together.  Here are the steps for collaborative filtering:
+
+1.  Initialize x and $\Theta$ to small random values.
+2.  Minimize the cost function using gradient descent (or another advanced algorithm) with two partial derivates of the cost functions, one for $\Theta$'s and one for x's:
+
+$$ x_k^{(i)} = x_k^{(i)} - \alpha(\sum_{j:r(i,j)=1}((\Theta^{(j)})^Tx^{(i)}-y^{(i,j)})\Theta_k^{(j)} + \lambda x_k^{(i)}) $$
+
+$$ \Theta_k^{(j)} = \Theta_k^{(j)} - \alpha(\sum_{j:r(i,j)=1}((\Theta^{(j)})^Tx^{(i)}-y^{(i,j)})x_k^{(i)} + \lambda\Theta_k^{(j)}) $$
