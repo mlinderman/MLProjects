@@ -699,3 +699,17 @@ One important difference here from what we've done previously: since we're estim
 $$ x_k^{(i)} = x_k^{(i)} - \alpha(\sum_{j:r(i,j)=1}((\Theta^{(j)})^Tx^{(i)}-y^{(i,j)})\Theta_k^{(j)} + \lambda x_k^{(i)}) $$
 
 $$ \Theta_k^{(j)} = \Theta_k^{(j)} - \alpha(\sum_{j:r(i,j)=1}((\Theta^{(j)})^Tx^{(i)}-y^{(i,j)})x_k^{(i)} + \lambda\Theta_k^{(j)}) $$
+
+Note, no special case for $x_0$ or $\Theta_0$
+
+3.  Then, you can predict. If user j has not seen movie i, you predict by doing $(\Theta^{(j)})^T(x^{(i)})$.
+
+
+Taking this a step further, it's similar to recommending other products based on products a user has purchased.  If you think of a matrix where we take the movies as rows and users as columns, each position is the $(\Theta^{(j)})^T(x^{(i)})$ for the user j and the movie i.  It's just a matrix multplying thetas times x's for each user and movie.  The vectorized implementation of that is just $X\Theta^T$.  That's how to compute the matrix for all movies/users ratings. (I guess the result contains the predictions for the users/movies.  Since the users gave us their category preferences - the thetas.).  FyI, this is low-rank matrix factorization.
+
+After that, you can take the learned features to find similar movies or products.  (btw, these features are not easy to categorize by a human but will be the most salient factors that cause a user to like/dislike it).  So with the feature vector for a movie, you're looking for the movies with the smallest difference between features - small squared error:    
+
+
+$$||x^{(i)} - x^{(j)}||$$
+
+
