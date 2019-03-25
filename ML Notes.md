@@ -588,18 +588,18 @@ So how do you choose the threshold between what is ok and what is an anomoly?  A
 
 Then fit $\mu$ and $\sigma^2$ with the training set, as described above.  And plug in validation samples to see if the result is > or < $\epsilon$.  At this point, you've selected $\epsilon$ pretty arbitrarily so calculate true positivies, false positives, true negatives and false negatives so that you can then calculate precision, recall and F1 score.  Classification accuracy is not a good metric here because if you predicted 1 every time (normal), you'd get pretty good performance because the data is skewed toward normal samples.  
 
-Finally, to choose a good value for $\epsilon$ you can use the validation set, vary it and pick the value that maximizes F1 score or gets the best balance between precision and recall.  Then you'd take the final model and evaluate it on the test set.
+Finally, to choose a good value for $\epsilon$ you can use the validation set, vary the $\epsilon$ and pick the value that maximizes F1 score or gets the best balance between precision and recall.  Then you'd take the final model and evaluate it on the test set.
 
-So, since we have labeled data here, why not just treat this as a supervised learning problem - with weights applied to features in logistic regression or a neural network?  
+So, since we have labeled data here, why not just treat this as a supervised learning problem - with weights applied to features in logistic regression or a neural network?  Rationales for choosing anomoly detection vs. supervised learning:
 
 Anomoly detection:
-- very small number of positive examples (anomolous ones) and large number of negative examples (normal ones).  In this case, you're mostly relying on - negative examples with your skewed dataset.
-- many different types of anomolies so a supervised learning algorithm would predict mostly what it's seen in training 
-        but that wouldn't work as well on anomolies are completely different
+- you have a very small number of positive examples (anomolous ones) and large number of negative examples (normal ones).  In this case, you're mostly relying on  negative examples (normal ones) with your skewed dataset.
+- there are many different types of anomolies so a supervised learning algorithm would predict mostly what it's seen in training 
+        but that wouldn't work as well on anomolies that are completely different
 
 For supervised learning:
-- a large number of positive and negative examples
-- enough positive examples to get a sense of what all positives might look like.
+- you have a large number of positive and negative examples
+- you have enough positive examples to get a sense of what all positives might look like.
 - example: Spam email detection - usually a large number of both positive and negative examples
 
 
@@ -705,11 +705,17 @@ Note, no special case for $x_0$ or $\Theta_0$
 3.  Then, you can predict. If user j has not seen movie i, you predict by doing $(\Theta^{(j)})^T(x^{(i)})$.
 
 
-Taking this a step further, it's similar to recommending other products based on products a user has purchased.  If you think of a matrix where we take the movies as rows and users as columns, each position is the $(\Theta^{(j)})^T(x^{(i)})$ for the user j and the movie i.  It's just a matrix multplying thetas times x's for each user and movie.  The vectorized implementation of that is just $X\Theta^T$.  That's how to compute the matrix for all movies/users ratings. (I guess the result contains the predictions for the users/movies.  Since the users gave us their category preferences - the thetas.).  FyI, this is low-rank matrix factorization.
+Taking this a step further, it's similar to recommending other products based on products a user has purchased.  If you think of a matrix where we take the movies as rows and users as columns, each position is the $(\Theta^{(j)})^T(x^{(i)})$ for the user j and the movie i.  It's just a matrix multplying $Theta$'s times X's for each user and movie.  The vectorized implementation of that is just $X\Theta^T$.  That's how to compute the matrix for all movies/users ratings. (I guess the result contains the predictions for the users/movies.  Since the users gave us their category preferences - the thetas.).  FYI, this is low-rank matrix factorization.  That's a name from linear algebra that has something to do with that it's the product of two vectors, I think, but you should look that up).
 
 After that, you can take the learned features to find similar movies or products.  (btw, these features are not easy to categorize by a human but will be the most salient factors that cause a user to like/dislike it).  So with the feature vector for a movie, you're looking for the movies with the smallest difference between features - small squared error:    
 
 
 $$||x^{(i)} - x^{(j)}||$$
 
+
+For users who have not rated any movies, matrix factorization doesn't work because they have no $\Theta$'s.  The first term in the cost function does nothing because there are no movies with any ratings.  So the only thing affecting that formula is the 2nd regularization param.  Here's that cost function again:
+
+$$ J(x^{(1)}....x^{(n_m)}, \Theta^{(1)}....\Theta{(n_u)}) = \frac{1}{2}\sum_{(i,j):r(i,j)=1}((\Theta^{(j)})^T(x^{(i)}) - y^{(i,j)})^2 + \frac{\lambda}{2}\sum_{i=1}^{(n_m)}\sum_{k=1}^n(x_k^{(i)})^2 + \frac{\lambda}{2}\sum_{j=1}^{n_u}\sum_{k=1}^n(\Theta_k^{(j)})^2$$
+
+And that 2nd regluaration param pushes the values to zero.  So we'd predict that the user would hate every movie.  To fix this, use mean normalization.  Take the mean rating for each movie and subtract that from *every* rating and user making a new matrix to use for predicting/recommending.  Then for user j on movie i, you predict $(\Theta^{(j)})(x^{(i)}) + \mu_i$.  That seems like a convoluted way to say (and Ng conceded this, sort of), that you should just use the mean rating for all movies when a user hasn't rated anything. Makes sense, nothing to use for predictions against so just use the crowd's preferences.  In cases where movies have no ratings...
 
