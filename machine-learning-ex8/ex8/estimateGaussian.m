@@ -21,9 +21,10 @@ sigma2 = zeros(n, 1);
 %               should contain variance of the i-th feature.
 
 mu = sum(X, 1) ./ m;
-sigma2 = var(X, 1);
-
-
+% variance is just standard deviation squared - see rules about how to calculate std dev in math references
+% but basically, it's the average distance from the mean (mu).  Here, we're calculating that for every feature
+% One interesting point: std dev is calculated differently for a sample vs the entire population
+sigma2 = var(X, 1); 
 
 
 % =============================================================

@@ -23,17 +23,21 @@ for epsilon = min(pval):stepsize:max(pval)
     % Note: You can use predictions = (pval < epsilon) to get a binary vector
     %       of 0's and 1's of the outlier predictions
 
+    % yval is a vector of actual outlier values that you use to compare pvals
+    % F1 score.  First calculate true positives (TP), false positives (FP), etc...
+    % a true positive is one that's under the current threshold for normal (epsilon)
+    %pvalpos = (pval < epsilon);
+    %pvalneg = (pval >= epsilon);
+    predictions = (pval < epsilon);
 
+    tp = sum(predictions + yval == 2); % prediction is positive and matches yval
+    fp = sum(predictions == 1 & yval == 0); % prediction is positive and does not match yval
+    fn = sum(predictions == 0 & yval == 1); % prediction is negative and does not match yval
 
+    precision = tp / (tp + fp); % what percentage of the positive predictions did you get right?
+    recall = tp / (tp + fn); % what percentage of the 
 
-
-
-
-
-
-
-
-
+    F1 = 2 * (precision * recall / (precision + recall));
 
     % =============================================================
 

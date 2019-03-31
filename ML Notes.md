@@ -344,7 +344,7 @@ It's important to have a numerical way to measure performance and use it for eac
 
 ### Handling skewed data
 
-Skewed classes are when a classifier is trying to detect a very small occurrence.  Say, for example, that only .5% of examples are positive. You could write what appears to be a great algorithm that gets 99% of the correct predictions but that still misses half of the positives.  So it's not as good as it seems.  A non-learning algorithm that just predicts every sample is negative would do better since that would have a .5% error.
+Skewed classes are when a classifier is trying to detect a very small occurrence.  Say, for example, that only .5% of examples are positive. You could write what appears to be a great algorithm that gets 99% of the correct predictions but that still misses half of the positives (but there just aren't very many of them).  So it's not as good as it seems.  A non-learning algorithm that just predicts every sample is negative would do better since that would have a .5% error.
 
 This is the problem with using accuracy as a measure. And also a problem with using a single measure to gauge algorithm performance.
 Enter precision vs. recall
