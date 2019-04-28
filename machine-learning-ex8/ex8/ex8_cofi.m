@@ -128,22 +128,53 @@ my_ratings = zeros(1682, 1);
 
 % Check the file movie_idx.txt for id of each movie in our dataset
 % For example, Toy Story (1995) has ID 1, so to rate it "4", you can set
-my_ratings(1) = 4;
+%my_ratings(1) = 4;
 
 % Or suppose did not enjoy Silence of the Lambs (1991), you can set
-my_ratings(98) = 2;
+%my_ratings(98) = 2;
 
 % We have selected a few movies we liked / did not like and the ratings we
 % gave are as follows:
-my_ratings(7) = 3;
-my_ratings(12)= 5;
-my_ratings(54) = 4;
-my_ratings(64)= 5;
-my_ratings(66)= 3;
-my_ratings(69) = 5;
-my_ratings(183) = 4;
-my_ratings(226) = 5;
-my_ratings(355)= 5;
+%my_ratings(7) = 3;
+%my_ratings(12)= 5;
+%my_ratings(54) = 4;
+%my_ratings(64)= 5;
+%my_ratings(66)= 3;
+%my_ratings(69) = 5;
+%my_ratings(183) = 4;
+%my_ratings(226) = 5;
+%my_ratings(355)= 5;
+
+my_ratings(10) = 5;
+my_ratings(98) = 4;
+my_ratings(14) = 5;
+my_ratings(15) = 2;
+my_ratings(23) = 5;
+my_ratings(28) = 5;
+my_ratings(35) = 1;
+my_ratings(50) = 5;
+my_ratings(52) = 5;
+my_ratings(56) = 5;
+my_ratings(58) = 4;
+my_ratings(67) = 2;
+my_ratings(70) = 5;
+my_ratings(69) = 4;
+my_ratings(88) = 1;
+my_ratings(94) = 3;
+my_ratings(96) = 5;
+my_ratings(100) = 5;
+my_ratings(132) = 4;
+my_ratings(153) = 4;
+my_ratings(190) = 5;
+my_ratings(197) = 5;
+my_ratings(204) = 4;
+my_ratings(208) = 1;
+my_ratings(212) = 1;
+my_ratings(265) = 4;
+my_ratings(417) = 2;
+
+
+
 
 fprintf('\n\nNew user ratings:\n');
 for i = 1:length(my_ratings)
