@@ -73,7 +73,7 @@ Theta_grad = zeros(size(Theta));
 % Y is also num_movies x num_users - so subtracting that is very simple
 % likewise, R is also num_movies x num_users so to negate users+movies without ratings, just use dot product
 % then square every element and sum in both directions to produce the cost
-J = 1/2 * sum(sum(((X * transpose(Theta) - Y) .* R).^2));
+J = 1/2 * sum(sum(((X * transpose(Theta) - Y) .* R).^2)) + ((lambda/2) * sum(sum(Theta.^2))) + ((lambda/2) * sum(sum(X.^2)));
 
 
 % same basic X * transpose(Theta) as above but since these are partial derivatives, no squaring,
@@ -83,8 +83,8 @@ J = 1/2 * sum(sum(((X * transpose(Theta) - Y) .* R).^2));
 % like usual, focus on aligning the rows columns in the matrix multiplications to what you need 
 % in calculating these two grads, you want the same dimensions as the starting X and Theta matrices:
 % movies x features  and   users by features, respectively
-X_grad = ((X * transpose(Theta) - Y) .* R) * Theta;
-Theta_grad = transpose(((X * transpose(Theta) - Y) .* R)) * X;
+X_grad = ((X * transpose(Theta) - Y) .* R) * Theta .+ (lambda .* X);
+Theta_grad = transpose(((X * transpose(Theta) - Y) .* R)) * X .+ (lambda .* Theta);
 
 % =============================================================
 
