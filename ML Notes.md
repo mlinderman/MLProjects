@@ -675,13 +675,13 @@ $$\Theta^{(j)}_k = \Theta^{(j)}_k - \alpha(\sum_{i:r(i,j)=1}((\Theta^{(j)})^T(x^
 Or you could use the cost function with more advanced learning algorithms.
 
 #### Collaborative Filtering
-But the above recommender system as described assumes that you actually have feature values for every movie - which would require watching each one and populating all the features - probably not going to happen.  So we have no values for the features...  But what if we ask users to tell us what types of movies they like based on our categories?  Something like a brief survey on Netflix that asks you to select the features you like best - maybe on a 1-5 scale.  Then we don't have the feature values but the $\Theta$ vectors instead, 1 per user.  So we need to go backwards, taking the $\Theta$ vector for each user and asking what would the feature value be for a given movie/user to match those thetas - or what is $(\Theta^{(1)})^Tx^{(1)}$ so that it equals about 5, for example,  So you're using the user's ratings and the users preferences to find the feature values for the movie.  
+But the above recommender system as described assumes that you actually have feature values for every movie - which would require watching each one and populating all the features - probably not going to happen.  So we have no values for the features...  But what if we ask users to tell us what types of movies they like based on our categories?  Something like a brief survey on Netflix that asks you to select the features you like best - maybe on a 1-5 scale.  Then we don't have the feature values but the $\Theta$ vectors instead, 1 per user.  So we need to go backwards, taking the $\Theta$ vector for each user and asking what would the feature value be for a given movie/user to match those thetas - or what is $(\Theta^{(1)})^Tx^{(1)}$ so that it equals about 5, for example,  So you're using the user's ratings and the users preferences to find the features and give them theta values for the movie.  
 
 So, note that what we're learning here in the formula below!  It's the features of x^{(i)}, not the theta.
 
 $$ J(x^{(i)}) = \frac{1}{2}\sum_{i:r(i,j)=1}((\Theta^{(j)})^T(x^{(i)}) - y^{(i,j)})^2 + \frac{\lambda}{2}\sum_{k=1}^n(x_k^{(i)})^2 $$
 
-And to learn all the feature for all the movies ($n_m =$ number of movies):
+And to learn all the features for all the movies ($n_m =$ number of movies):
 
 $$ J(x^{(1)}....x^{(n_m)}) = \frac{1}{2}\sum_{i=1}^{(n_m)}\sum_{i:r(i,j)=1}((\Theta^{(j)})^T(x^{(i)}) - y^{(i,j)})^2 + \frac{\lambda}{2}\sum_{i=1}^{(n_m)}\sum_{k=1}^n(x_k^{(i)})^2 $$
 
@@ -701,6 +701,7 @@ $$ x_k^{(i)} = x_k^{(i)} - \alpha(\sum_{j:r(i,j)=1}((\Theta^{(j)})^Tx^{(i)}-y^{(
 $$ \Theta_k^{(j)} = \Theta_k^{(j)} - \alpha(\sum_{j:r(i,j)=1}((\Theta^{(j)})^Tx^{(i)}-y^{(i,j)})x_k^{(i)} + \lambda\Theta_k^{(j)}) $$
 
 Note, no special case for $x_0$ or $\Theta_0$
+Also note: all of the above can be vectorized, rather then looping one row at a time. The filtering of the sum can be done just by using a dot product of the R matrix since.  After that, just focus on getting the matrices lined up with what you want the dimensions of the new matix to be.  (See exercise 8 in GitHub where you figured this out!!!)
 
 3.  Then, you can predict. If user j has not seen movie i, you predict by doing $(\Theta^{(j)})^T(x^{(i)})$.
 

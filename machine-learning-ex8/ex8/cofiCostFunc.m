@@ -7,6 +7,11 @@ function [J, grad] = cofiCostFunc(params, Y, R, num_users, num_movies, ...
 %
 
 % Unfold the U and W matrices from params
+% I don't understand the value of jamming the X and Theta arrays into params 
+% only to have to pull them back out immediately inside the function
+% Why not just pass the as separate params?  Yes, they're both have
+% num_features cols.  Is that why?  If so, still don't see it.
+% Oh, it's so it'll work with fminunc, or other optimized functions
 X = reshape(params(1:num_movies*num_features), num_movies, num_features);
 Theta = reshape(params(num_movies*num_features+1:end), ...
                 num_users, num_features);
@@ -41,19 +46,45 @@ Theta_grad = zeros(size(Theta));
 %
 
 
+% you can find cost of both X and Theta at the same time (i.e. collaborative filtering)
+% remember this is just the cost function for passed values of Theta and X, it's not the
+% partial derivative of the cost.  We'll calculate that next.
+
+% Theta is users parameters, NOT specific to a movie, just how they value particular 
+% features as they get defined.
+% X is features for all movies
+% Y is where the ratings are, movies x users
 
 
+% feels like this should be vectorized
+% need to sum only where the user has rated the movie
+% see below for vectorized version!!
+%for i = 1:num_movies
+%    for j = 1:num_users
+%        if R(i,j) == 1
+%            % this isn't theta transpose x but x theta transpose in order to get
+%            % the vectors looking like: 1x3 * 3x1 so that the result is 1x1
+%            J = J + 1/2 * (X(i, :) * transpose(Theta(j, :))- Y(i,j))^2
+%        end
+%    end
+%end
+
+% X * transpose(Theta) will yield a num_movies x num_users matrix;
+% Y is also num_movies x num_users - so subtracting that is very simple
+% likewise, R is also num_movies x num_users so to negate users+movies without ratings, just use dot product
+% then square every element and sum in both directions to produce the cost
+J = 1/2 * sum(sum(((X * transpose(Theta) - Y) .* R).^2));
 
 
-
-
-
-
-
-
-
-
-
+% same basic X * transpose(Theta) as above but since these are partial derivatives, no squaring,
+% no 1/2 and need to multiply by one or the other term 
+% this is a vectorized version
+% also remember that this is just a gradient, not the formula to calculate the next Theta or X value\
+% like usual, focus on aligning the rows columns in the matrix multiplications to what you need 
+% in calculating these two grads, you want the same dimensions as the starting X and Theta matrices:
+% movies x features  and   users by features, respectively
+X_grad = ((X * transpose(Theta) - Y) .* R) * Theta;
+Theta_grad = transpose(((X * transpose(Theta) - Y) .* R)) * X;
 
 % =============================================================
 
