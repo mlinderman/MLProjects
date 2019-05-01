@@ -718,5 +718,26 @@ For users who have not rated any movies, matrix factorization doesn't work becau
 
 $$ J(x^{(1)}....x^{(n_m)}, \Theta^{(1)}....\Theta{(n_u)}) = \frac{1}{2}\sum_{(i,j):r(i,j)=1}((\Theta^{(j)})^T(x^{(i)}) - y^{(i,j)})^2 + \frac{\lambda}{2}\sum_{i=1}^{(n_m)}\sum_{k=1}^n(x_k^{(i)})^2 + \frac{\lambda}{2}\sum_{j=1}^{n_u}\sum_{k=1}^n(\Theta_k^{(j)})^2$$
 
-And that 2nd regluaration param pushes the values to zero.  So we'd predict that the user would hate every movie.  To fix this, use mean normalization.  Take the mean rating for each movie and subtract that from *every* rating and user making a new matrix to use for predicting/recommending.  Then for user j on movie i, you predict $(\Theta^{(j)})(x^{(i)}) + \mu_i$.  That seems like a convoluted way to say (and Ng conceded this, sort of), that you should just use the mean rating for all movies when a user hasn't rated anything. Makes sense, nothing to use for predictions against so just use the crowd's preferences.  In cases where movies have no ratings...
+And that 2nd regulurization param pushes the values to zero.  So we'd predict that the user would hate every movie.  To fix this, use mean normalization.  Take the mean rating for each movie and subtract that from *every* rating and user making a new matrix to use for predicting/recommending.  Then for user j on movie i, you predict $(\Theta^{(j)})(x^{(i)}) + \mu_i$.  That seems like a convoluted way to say (and Ng conceded this, sort of), that you should just use the mean rating for all movies when a user hasn't rated anything. Makes sense, nothing to use for predictions against so just use the crowd's preferences.  In cases where movies have no ratings...
 
+
+#### Large Datasets 
+Learning with large datasets is beneficial - more data the better for training a model accurately.  But it comes at computational expense.  One step of gradient descent, for example, with a set of 100 million records would mean you'd need to calculate the gradient across all of those records for each adjustment to $\Theta$s.
+
+$$\Theta_j = \Theta_j - \alpha \frac{1}{2}\sum_{i=1}^m(h_\theta(x^{(i)}) - y^{(i)})x_j^{(i)}$$
+
+You should first train with a fraction of the huge data set to see if you could do just as well with a smaller number.  To do that, you'd graph the learning curves  for a relatively small set of data for both the training set and the cross-validation set.  If the curves remain pretty far apart, then you have pretty different results for different data (a high variance situation?) and more data would help.  If, on the other hand, the curves converge and plateau with just a small set for both training and x-validation sets, you can probably get away with using a smaller set since adding data won't particularly help.
+
+Stochastic gradient descent
+With tons of data, here's a way to speed gradient descent.  In the above update step, if m is large, you'd need to sum over all the records for every update (this is called batch gradient descent because we're using all the data - a batch, sort of).  If you have millions of records, it'll take a while.  With stochastic gradient descent, you still iterate over all training examples but you do that once, updating once for each example, not for the sum of all examples.  So you're calculating the rate of change for a single example.  
+
+
+for i = 1 to m (number of examples) {
+
+$$\Theta_j = \Theta_j - \alpha (h_\theta(x^{(i)}) - y^{(i)})x_j^{(i)})$$
+
+}
+
+(inside the loop, you'd update each $\Theta_j$ for j = i...n (number of features))
+
+It'll take a more indirect path to the global minimum but won't require summing all training set records for each feature for each $\Theta_j$.
