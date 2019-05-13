@@ -728,7 +728,7 @@ $$\Theta_j = \Theta_j - \alpha \frac{1}{2}\sum_{i=1}^m(h_\theta(x^{(i)}) - y^{(i
 
 You should first train with a fraction of the huge data set to see if you could do just as well with a smaller number.  To do that, you'd graph the learning curves  for a relatively small set of data for both the training set and the cross-validation set.  If the curves remain pretty far apart, then you have pretty different results for different data (a high variance situation?) and more data would help.  If, on the other hand, the curves converge and plateau with just a small set for both training and x-validation sets, you can probably get away with using a smaller set since adding data won't particularly help.
 
-Stochastic gradient descent
+##### Stochastic gradient descent
 With tons of data, here's a way to speed gradient descent.  In the above update step, if m is large, you'd need to sum over all the records for every update (this is called batch gradient descent because we're using all the data - a batch, sort of).  If you have millions of records, it'll take a while.  With stochastic gradient descent, you still iterate over all training examples but you do that once, updating once for each example, not for the sum of all examples.  So you're calculating the rate of change for a single example.  
 
 
@@ -741,3 +741,78 @@ $$\Theta_j = \Theta_j - \alpha (h_\theta(x^{(i)}) - y^{(i)})x_j^{(i)})$$
 (inside the loop, you'd update each $\Theta_j$ for j = i...n (number of features))
 
 It'll take a more indirect path to the global minimum but won't require summing all training set records for each feature for each $\Theta_j$.
+
+So, for stochastic gradient descent:
+1. Randomly shuffle the data to ensure you don't have it in any order
+2. loop over each training example, update each $\Theta_j$ as above, without summing over all
+
+Also, it never actually converges on the global minimum and stays there.  It kind of wanders around near the global minimum since any example might take the cost away from the global minimum but the average direction will be toward the global minimum.
+
+If m is very large, you may only need to take one pass through it using stochastic gradient descent. But in any case, it'll be a small number of passes - maybe 10 or 20, rather than one pass per update step.
+
+
+##### Mini-batch gradient descent
+Instead of using all samples in each update as in gradient descent, you could just use a portion.  That would make the updates faster because you're not summing over all samples, only as many as are in your mini-batch.  The size is usually between 2 and 100 with 10 as pretty typical.  So what this means for the update rule is:
+
+$$ \Theta_j = \Theta_j - \alpha \frac{1}{10} \sum_{i=1}^{i+9}(h_{\theta}(x^{(k)}) - y^{(k)})x_j^{(k)} $$
+
+So, to summarize, say batch size is 10
+
+for i = 1, 11, 21, 31, .....  991... {
+
+$$ \Theta_j = \Theta_j - \alpha \frac{1}{10} \sum_{i=1}^{i+9}(h_{\theta}(x^{(k)}) - y^{(k)})x_j^{(k)} $$
+
+
+
+(for every j=0,....,n)
+}
+
+Compared to stochastic gradient descent, mini-batch gradient descent needs to have a vectorized implememtation to make it faster than stochastic gradient descent.
+
+##### Stochastic gradient descent tuning and convergence
+What we did to confirm convergence of gradient descent to a minimum, we plotted the cost as a function of the number of iterations.  If cost was declining, you were good.  If cost plateued, you were probably doing enough iterations.  With stochastic gradient descent, because the cost calculation requires a sum over all training examples, this would be expensive.  (Remember, we're talking about maybe millions of records here.)
+
+Here's the basic cost function for illustration - note that if you were to pause the algorithm to test the cost every so often, you'd need to sum over all examples:
+
+$$ J_{train}(\Theta) = \frac{1}{2}\sum_{i=1}^m((h_{\Theta}(x)^{(i)}) - y^{(i)})^2 $$
+
+The whole point of stochastic gradient descent was to avoid such summing. So, instead, just before updating \Theta, compute the cost on just that example (no summing).
+
+Another option to ensure convergence is to, every 1000 examples or so, plot an average cost over those examples.  That gives you kind of a running estimate of how well the algorithm is doing over those last 1000 examples.  Also, a smaller learning rate might get a bit closer to the global minimum because, remember stochastic gradient descent kind of winds around on its way toward the minimum and never really lands on it.  So, the smaller the increments, the better the liklihood that the wandering around will be closer to that global minimum.  (But a smaller learning rate would also impact the speed of the algorithm in getting near the global minimum.)  If you increase the number of examples, say to 5000, in one cost measurement might result in a smoother curve toward convergence and it might make a trend in the cost curve more visible.  If the curve climbs, it's likely your learning rate ($\alpha$) is too large.
+
+Since stochastic gradient descent will wander around close to the global minimum forever and never really arrive, you could start adjusting your learning rate down as the cost goes down.  That will make the meandering smaller and smaller until it gets pretty close to convergence on the global minimum.  The reason people don't do this is because then it's just another variable to fiddle with and may not get you that much closer to the global minimum.
+
+#### Online learning
+Continuous data streams are possible - like using web data.  An on-line learning algorithm could be used rather than a set training set (even though that may be collected at an interval).  When an example is acquired, we do an update of $\Theta$ and throw the example away.  This type of algorithm adapts to changing user preferences.
+
+#### What if you have too much data to run an algorithm on one machine?  Ng is calling this map-reduce
+As important as stochastic gradient descent to scale algorithms on tons of data.  Idea is that you could split your training set into chunks - as many as you have processors, whether that's on one machine or 100.  Then run the summing operation in the update rule over each chunk on separate machines to parallelize the operation.  After that, you'll have one value per chunk and you can just add those chunks together and plug them into the update rule, rather than summing over all values in one place.  Network latency can make this slower than $\frac{time}/{chunks}.
+
+Whenever the bulk of the work in an algorithm can be expressed as sums, you could use this parallelism to speed it up.  On a single machine with multiple cores, you can send the summation operation to a core rather than parallelizing over multiple machines.  Some numerical linear libraries will automatically parallelize over multiple cores in the same machine.  (Is there one of those for python?)  Open source: Hadoop.  Hmmm, thought that was something else.
+
+#### Example: Photo OCR (detecting strings of text within photes)
+This is an example of a machine learning pipeline.  A pipeline consists of multiple steps.  In photo OCR, first we need to find the regions on the image that contain text.  Second, we need to break that text down into character regions.  Third we need to identify the characters and then put them together to spell something (the OCR step).
+
+Pipelines are common and consist of modules.  And they can be split by algorithm and by engineer or even team.
+
+Detecting text regions is similar to, say detecting pedestrians in an image.  But with pedestrian detection, the aspect ratio is generally the same. With that problem, you'd collect a bunch of images of the same aspect ratio with pedestrians in them and another bunch with the same aspect ration without pedestrians in them.  Then you train your algorithm to recognize images with pedestrians in them.  Then you take patches (sliding windows) of the image that correspond to the aspect ratio and see which ones of those patches contains a pedestrian using your trained algorithm.  As you slide the patch over the image, you move it by a "step-size" distances for each check.  You generally don't want to slide the patch 1 pixel at a time because that would be expensive and you can afford to slide it by a greater distance and not miss any pedestrians.  Then, to accommodate different sized pedestrians in an image, you increase the patch size using the same aspect ratio and do it again, sliding the patch over the image.
+
+How would that work in text detection?  You collect a bunch of samples containing text. You could use the same sized patch (accommodating one or more characters).  So, pass a patch over the image like above.  The result will be 1's and 0's for each patch.  Overlaying those on a black background as shades of gray, depending on how positive the classifier was when deciding whether the patch contained text.  Then you could compute mathmatically by asking, for every pixel, is it within some distince of a white pixel, then color it white also.  That will result in some white regions.  Then you could rule out boxes that don't have an aspect ratio that aren't right for text regions (like vertical regions).  That will leave you with horizontal boxes which are your text regions in the image. That's step one in the pipeline: finding text regions.
+
+The next step in the pipeline is splitting the text regions into character regions.  This is another algorithm again with positive and negative examples.  In Ng's example, his positive examples were boundaries between characters, not individual characters and his negative ones where entire characters or blank space.  The point is that he's looking for patches where the horizontal middle of the image is where you could draw a vertical line between the two characters on either side.  So the algorithm looks for the boundaries, and, important point, the sliding window is the height of the text region being examined and does not need to change.  (You'd use a reasonable aspect ratio that looks like it would accommodate a character - a bit taller than it is wide.).  Once you have the divider windows, split them down the middle to define the split between and then take each character.  The last step in the pipeline then is using a classifier on the character regions you just defined.  So, there are 3 different classifiers in this pipeline problem.  The first just determines if a sliding window across the entire image contains text.  Once you then do a bit of fiddling by including pixels that are close to those defined windows, you'll have text regions on the page.  The 2nd pipeline step is to split each of those text regions into character regions, also using a sliding window approach but this time of a single sized window (for each region).  And the final step is identify the characters in the character regions by using a classifier that identifies letters (and maybe numbers).
+
+
+#### Getting lots of data and data synthesis
+In general, learning algorithms work better with more data (provided the algorithm is low bias to begin with - and will generalize well to unseen data).  If you don't have enough data (a small sample), you can 1) in the case of letter classifier (as above), you could use all the fonts on the computer and paste them against random backgrounds, using different colors, etc, to synthesize new data from other data.  2) you can take your existing training set and apply various filters to it or add noise - easy to describe with sounds and images - not so sure about other training sets.  It's important to apply noise or "warpings" to imitate those that might be seen with real data, not something so crazy that it would not be seen.  (To see if your classifier is low bias, plot the learning curves - test set vs validation set)  To lessen bias, increase the number of features or neural net neurons)
+
+He asks the question: "how much work would it take to get 10x the amount of data?".   Often, it's a few hours or days and could be worth it.  How many hours to get a certain number of examples?  If you calculate this, you might be able to prove that it's worth it.
+
+Another way to get more data would be to use crowd sourcing - via Amazon mechanical turk, or similar.  That data can be unreliable though.
+
+#### Pipeline priorities - Ceiling analysis
+Taking the example of the pipeline OCR example used above, say the accuracy of the entire pipeline is 72%.  You could, rather than let your learning algorithm detect where the text is in an image, just give it the right answers so that the text detection part is 100% perfect.  Then let's say the overall accuracy is 89%.  Then do the same for the character segmentation part (finding boundaries between characters) and measure again.  Say at that point it's 90% and then if you cheat the same way on the character recognition part you should be at 100%.  This way, you can tell where to spend your time and where the greatest increase in performance can be gained by working on any one component of the pipeline.  Ng tells a story about a team of 2 engineers who spent a year and a half working on a background removal algorithm only to realize later that it didn't make that much difference in the overall performance of their image recognition algorithm.
+
+
+
+
+
