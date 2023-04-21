@@ -26,6 +26,7 @@ Gradient descent uses partial derivatives with respect to each $\theta$ value, o
 
 for each iteration, calculate new $\theta$ values:
 
+
 $$    \theta_0 = \theta_0 - \alpha\frac{1}{m}\sum_{i=1}^m(h_\theta(x^{i}) - y^{i})*x_0^{(i)}) $$
 $$    \theta_1 = \theta_1 - \alpha\frac{1}{m}\sum_{i=1}^m(h_\theta(x^{i}) - y^{i})*x_1^{(i)}) $$
 ...
