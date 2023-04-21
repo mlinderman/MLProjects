@@ -1,6 +1,7 @@
 ## Basic hypothesis (model):
 
 $$ h_\theta(x) = \theta_o x_0 + \theta_1 x_1 + \theta_2 x_2....\theta_n x_n  $$
+
 where $\theta_n$ is a parameter value to be calculated and $x_n$ is the value for the feature in the sample (training) data (with n features)
 
 Basic cost function:
