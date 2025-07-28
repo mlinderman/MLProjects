@@ -1,6 +1,9 @@
 ## Basic hypothesis (model):
 
-$$ h_\theta(x) = \theta_o x_0 + \theta_1 x_1 + \theta_2 x_2....\theta_n x_n  $$
+$$
+h_\theta(x) = \theta_0 x_0 + \theta_1 x_1 + \theta_2 x_2 + \cdots + \theta_n x_n
+$$
+
 where $\theta_n$ is a parameter value to be calculated and $x_n$ is the value for the feature in the sample (training) data (with n features)
 
 Basic cost function:
@@ -23,10 +26,12 @@ First off, you'll need to have a $\theta$ value for each feature so you can use 
 
 Gradient descent uses partial derivatives with respect to each $\theta$ value, one at a time.  You calculate the cost iteratively while tweaking $\theta$ values in the direction of a lower slope, incrementally moving toward the minimum value for the cost.  If you think of the cost function's graph as a parabolic shape on a graph (bowl shaped, convex), you're looking for the bottom of that curve.
 
-for each iteration, calculate new $\theta$ values:
+For each iteration, calculate new $\theta$ values:
 
 $$    \theta_0 = \theta_0 - \alpha\frac{1}{m}\sum_{i=1}^m(h_\theta(x^{i}) - y^{i})*x_0^{(i)}) $$
+
 $$    \theta_1 = \theta_1 - \alpha\frac{1}{m}\sum_{i=1}^m(h_\theta(x^{i}) - y^{i})*x_1^{(i)}) $$
+
 ...
 
 $$    \theta_n = \theta_n - \alpha\frac{1}{m}\sum_{i=1}^m(h_\theta(x^{i}) - y^{i})*x_n^{(i)}) $$
@@ -150,7 +155,7 @@ $$ \theta = (X^TX)^{-1}*(X^Ty)$$
 
 With regularization, that becomes:
 
-$$ \theta = (X^TX + \lambda*L)^{-1}*(X^Ty) $$
+$$ \theta = (X^TX + \lambda * L)^{-1}*(X^Ty) $$
 
 where L is an identity matrix with dimensions (n+1)x(n+1) (number of features + 1 in both directions) AND position [0,0] set to 0 instead of 1 ([1,1] in Octave since it's stupidly 1 based). (eye(n) in Octave then update [1,1]).
 
